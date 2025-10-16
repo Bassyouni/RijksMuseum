@@ -19,6 +19,17 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         
         XCTAssertEqual(env.client.requestedURLs, [url])
     }
+    
+    func test_fetchCollectionIDs_whePassingNextPageToken_appendsItToURL() async throws {
+        let urlString = "www.a-url.com"
+        let pageToken = "any-token"
+        let sut = makeSUT(url: URL(string: urlString)!)
+        
+        try await sut.fetchCollectionIDs(nextPageToken: pageToken)
+        
+        let expectedURL = URL(string: "\(urlString)?pageToken=\(pageToken)")
+        XCTAssertEqual(env.client.requestedURLs, [expectedURL])
+    }
 }
 
 extension RemoteMuseumPiecesFetcherTests {

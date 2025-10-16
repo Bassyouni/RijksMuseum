@@ -19,6 +19,12 @@ public final class RemoteMuseumPiecesFetcher {
     }
     
     func fetchCollectionIDs(nextPageToken: String?) async throws {
-        try? await httpClient.get(url: url)
+        var url = self.url
+        
+        if let token = nextPageToken {
+            url = url.appending(queryItems: [.init(name: "pageToken", value: token)])
+        }
+        
+        _ = try? await httpClient.get(url: url)
     }
 }

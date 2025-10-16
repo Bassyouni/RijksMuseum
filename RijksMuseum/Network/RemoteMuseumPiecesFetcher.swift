@@ -7,17 +7,17 @@
 
 import Foundation
 
-public final class RemoteMuseumPiecesFetcher {
+final class RemoteMuseumPiecesFetcher {
     
     private let url: URL
     private let httpClient: HTTPClient
     
-    public enum Error: Swift.Error {
+    enum Error: Swift.Error {
         case networkError
         case invalidData
     }
     
-    public init(url: URL, httpClient: HTTPClient) {
+    init(url: URL, httpClient: HTTPClient) {
         self.url = url
         self.httpClient = httpClient
     }

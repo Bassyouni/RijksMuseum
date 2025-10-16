@@ -11,21 +11,21 @@ import XCTest
 final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     private let env = Environment()
     
-    func test_fetchCollectionIDs_requestsDataFromURL() async throws {
+    func test_fetchCollectionIDs_requestsDataFromURL() async {
         let url = URL(string: "www.a-url.com")
         let sut = makeSUT(url: url!)
         
-        try await sut.fetchCollectionIDs(nextPageToken: nil)
+        try? await sut.fetchCollectionIDs(nextPageToken: nil)
         
         XCTAssertEqual(env.client.requestedURLs, [url])
     }
     
-    func test_fetchCollectionIDs_whePassingNextPageToken_appendsItToURL() async throws {
+    func test_fetchCollectionIDs_whePassingNextPageToken_appendsItToURL() async {
         let urlString = "www.a-url.com"
         let pageToken = "any-token"
         let sut = makeSUT(url: URL(string: urlString)!)
         
-        try await sut.fetchCollectionIDs(nextPageToken: pageToken)
+        try? await sut.fetchCollectionIDs(nextPageToken: pageToken)
         
         let expectedURL = URL(string: "\(urlString)?pageToken=\(pageToken)")
         XCTAssertEqual(env.client.requestedURLs, [expectedURL])
@@ -40,6 +40,18 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .networkError)
+        }
+    }
+    
+    func test_fetchCollectionIDs_deliversErrorOnResponseWithInvalidJson() async {
+        let sut = makeSUT()
+        env.client.stubbedGetResult = .success(Data("".utf8))
+        
+        do  {
+            _ = try await sut.fetchCollectionIDs(nextPageToken: nil)
+            XCTFail("Expected load places to throw on error")
+        } catch {
+            XCTAssertEqual(error, .invalidData)
         }
     }
 }

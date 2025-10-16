@@ -14,6 +14,7 @@ public final class RemoteMuseumPiecesFetcher {
     
     public enum Error: Swift.Error {
         case networkError
+        case invalidData
     }
     
     public init(url: URL, httpClient: HTTPClient) {
@@ -31,5 +32,7 @@ public final class RemoteMuseumPiecesFetcher {
         guard let _ = try? await httpClient.get(url: url) else {
             throw .networkError
         }
+        
+        throw .invalidData
     }
 }

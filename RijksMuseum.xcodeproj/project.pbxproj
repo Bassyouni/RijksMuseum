@@ -22,10 +22,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8ACBEB502EA1854D0068C299 /* Exceptions for "RijksMuseum" folder in "RijksMuseum" target */ = {
+		8ACBEB822EA18DEF0068C299 /* Exceptions for "RijksMuseum" folder in "RijksMuseum" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Resources/Info.plist,
 			);
 			target = 8ACBEB272EA1854B0068C299 /* RijksMuseum */;
 		};
@@ -35,7 +35,7 @@
 		8ACBEB2A2EA1854B0068C299 /* RijksMuseum */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8ACBEB502EA1854D0068C299 /* Exceptions for "RijksMuseum" folder in "RijksMuseum" target */,
+				8ACBEB822EA18DEF0068C299 /* Exceptions for "RijksMuseum" folder in "RijksMuseum" target */,
 			);
 			path = RijksMuseum;
 			sourceTree = "<group>";
@@ -222,9 +222,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WED766W23U;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = RijksMuseum/Info.plist;
+				INFOPLIST_FILE = RijksMuseum/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchStoryboardName = /Resources.Lan;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -256,9 +256,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WED766W23U;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = RijksMuseum/Info.plist;
+				INFOPLIST_FILE = RijksMuseum/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchStoryboardName = /Resources.Lan;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (

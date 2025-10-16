@@ -36,4 +36,13 @@ final class RemoteMuseumPiecesFetcher {
         
         return try await CollectionURLsMapper().map(data: data).get()
     }
+    
+    @concurrent
+    func fetchMuseumPieceDetail(url: URL) async throws(Error) -> MuseumPiece {
+        guard let _ = try? await httpClient.get(url: url) else {
+            throw .networkError
+        }
+        
+        throw .invalidData
+    }
 }

@@ -22,6 +22,7 @@ final class RemoteMuseumPiecesFetcher {
         self.httpClient = httpClient
     }
     
+    @concurrent
     func fetchCollectionURLs(nextPageToken: String?) async throws(Error) -> (urls: [URL], nextPageToken: String?) {
         var url = self.url
         
@@ -33,6 +34,6 @@ final class RemoteMuseumPiecesFetcher {
             throw .networkError
         }
         
-        return try CollectionURLsMapper().map(data: data).get()
+        return try await CollectionURLsMapper().map(data: data).get()
     }
 }

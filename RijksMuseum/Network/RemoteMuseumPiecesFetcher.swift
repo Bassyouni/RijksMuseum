@@ -22,17 +22,30 @@ final class RemoteMuseumPiecesFetcher {
         self.httpClient = httpClient
     }
     
-    func fetchCollectionIDs(nextPageToken: String?) async throws(Error) {
+    func fetchCollectionIDs(nextPageToken: String?) async throws(Error) -> [String] {
         var url = self.url
         
         if let token = nextPageToken {
             url = url.appending(queryItems: [.init(name: "pageToken", value: token)])
         }
         
-        guard let _ = try? await httpClient.get(url: url) else {
+        guard let data = try? await httpClient.get(url: url) else {
             throw .networkError
         }
         
-        throw .invalidData
+        guard let collectionResponse = try? JSONDecoder().decode(CollectionResponse.self, from: data) else {
+            throw .invalidData
+        }
+        
+        return collectionResponse.orderedItems.map(\.id)
+    }
+}
+
+
+private struct CollectionResponse: Codable {
+    let orderedItems: [Item]
+    
+    struct Item: Codable {
+        let id: String
     }
 }

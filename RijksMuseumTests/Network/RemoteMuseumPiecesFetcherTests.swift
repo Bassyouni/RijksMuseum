@@ -54,6 +54,17 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
             XCTAssertEqual(error, .invalidData)
         }
     }
+    
+    func test_fetchCollectionIDs_deliversIDsOnHttpResponseWithValidJsonObject() async throws {
+        let sut = makeSUT()
+        let ids = ["id1", "id2"]
+        let jsonData = makeCollectionResponse(ids: ids)
+        env.client.stubbedGetResult = .success(jsonData)
+        
+        let receivedIDs = try await sut.fetchCollectionIDs(nextPageToken: nil)
+        
+        XCTAssertEqual(receivedIDs, ids)
+    }
 }
 
 extension RemoteMuseumPiecesFetcherTests {
@@ -65,6 +76,22 @@ extension RemoteMuseumPiecesFetcherTests {
         let sut = RemoteMuseumPiecesFetcher(url: url, httpClient: env.client)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
+    }
+    
+    private func makeCollectionResponse(
+        ids: [String],
+        nextPageToken: String = "any-token"
+    ) -> Data {
+        let orderedItems = ids.map { ["id": $0] }
+        
+        let json: [String: Any] = [
+            "orderedItems": orderedItems,
+            "next": [
+                "id":"https://data.rijksmuseum.nl/search/collection?pageToken=\(nextPageToken)"
+            ]
+        ]
+        
+        return try! JSONSerialization.data(withJSONObject: json)
     }
 }
 

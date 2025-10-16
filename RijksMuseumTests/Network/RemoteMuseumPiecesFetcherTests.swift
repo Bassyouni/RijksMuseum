@@ -11,68 +11,68 @@ import XCTest
 final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     private let env = Environment()
     
-    func test_fetchCollectionIDs_requestsDataFromURL() async {
+    func test_fetchCollectionURLs_requestsDataFromURL() async {
         let url = URL(string: "www.a-url.com")
         let sut = makeSUT(url: url!)
         
-        try? await sut.fetchCollectionIDs(nextPageToken: nil)
+        _ = try? await sut.fetchCollectionURLs(nextPageToken: nil)
         
         XCTAssertEqual(env.client.requestedURLs, [url])
     }
     
-    func test_fetchCollectionIDs_whePassingNextPageToken_appendsItToURL() async {
+    func test_fetchCollectionURLs_whePassingNextPageToken_appendsItToURL() async {
         let urlString = "www.a-url.com"
         let pageToken = "any-token"
         let sut = makeSUT(url: URL(string: urlString)!)
         
-        try? await sut.fetchCollectionIDs(nextPageToken: pageToken)
+        _ = try? await sut.fetchCollectionURLs(nextPageToken: pageToken)
         
         let expectedURL = URL(string: "\(urlString)?pageToken=\(pageToken)")
         XCTAssertEqual(env.client.requestedURLs, [expectedURL])
     }
     
-    func test_fetchCollectionIDs_deliversErrorOnError() async {
+    func test_fetchCollectionURLs_deliversErrorOnError() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
         
         do  {
-            _ = try await sut.fetchCollectionIDs(nextPageToken: nil)
+            _ = try await sut.fetchCollectionURLs(nextPageToken: nil)
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .networkError)
         }
     }
     
-    func test_fetchCollectionIDs_deliversErrorOnResponseWithInvalidJson() async {
+    func test_fetchCollectionURLs_deliversErrorOnResponseWithInvalidJson() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .success(Data("".utf8))
         
         do  {
-            _ = try await sut.fetchCollectionIDs(nextPageToken: nil)
+            _ = try await sut.fetchCollectionURLs(nextPageToken: nil)
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .invalidData)
         }
     }
     
-    func test_fetchCollectionIDs_deliversIDsOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchCollectionURLs_deliversURLsOnHttpResponseWithValidJsonObject() async throws {
         let sut = makeSUT()
-        let ids = ["id1", "id2"]
-        let jsonData = makeCollectionResponse(ids: ids)
+        let urls = [uniqueURL(), uniqueURL()]
+        let jsonData = makeCollectionResponse(urls: urls.map(\.absoluteString))
         env.client.stubbedGetResult = .success(jsonData)
         
-        let (receivedIDs, _) = try await sut.fetchCollectionIDs(nextPageToken: nil)
+        let (receivedURLs, _) = try await sut.fetchCollectionURLs(nextPageToken: nil)
         
-        XCTAssertEqual(receivedIDs, ids)
+        XCTAssertEqual(receivedURLs, urls)
     }
     
-    func test_fetchCollectionIDs_deliversNextPageTokenOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchCollectionURLs_deliversNextPageTokenOnHttpResponseWithValidJsonObject() async throws {
         let sut = makeSUT()
         let nextPageToken = "any token"
-        let jsonData = makeCollectionResponse(ids: [], nextPageToken: nextPageToken)
+        let jsonData = makeCollectionResponse(urls: [], nextPageToken: nextPageToken)
         env.client.stubbedGetResult = .success(jsonData)
         
-        let (_, receivedPageToken) = try await sut.fetchCollectionIDs(nextPageToken: nil)
+        let (_, receivedPageToken) = try await sut.fetchCollectionURLs(nextPageToken: nil)
         
         XCTAssertEqual(receivedPageToken, nextPageToken)
     }
@@ -90,10 +90,10 @@ extension RemoteMuseumPiecesFetcherTests {
     }
     
     private func makeCollectionResponse(
-        ids: [String],
+        urls: [String],
         nextPageToken: String = "any-token"
     ) -> Data {
-        let orderedItems = ids.map { ["id": $0] }
+        let orderedItems = urls.map { ["id": $0] }
         
         let json: [String: Any] = [
             "orderedItems": orderedItems,
@@ -103,6 +103,10 @@ extension RemoteMuseumPiecesFetcherTests {
         ]
         
         return try! JSONSerialization.data(withJSONObject: json)
+    }
+    
+    func uniqueURL() -> URL {
+        URL(string:  "www.\(UUID().uuidString).nl")!
     }
 }
 

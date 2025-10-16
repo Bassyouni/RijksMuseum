@@ -22,7 +22,7 @@ final class RemoteMuseumPiecesFetcher {
         self.httpClient = httpClient
     }
     
-    func fetchCollectionIDs(nextPageToken: String?) async throws(Error) -> (ids: [String], nextPageToken: String?) {
+    func fetchCollectionURLs(nextPageToken: String?) async throws(Error) -> (urls: [URL], nextPageToken: String?) {
         var url = self.url
         
         if let token = nextPageToken {
@@ -47,7 +47,7 @@ private struct CollectionResponse: Codable {
     let next: Next?
     
     struct Item: Codable {
-        let id: String
+        let id: URL
     }
     
     struct Next: Codable {

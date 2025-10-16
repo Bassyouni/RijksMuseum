@@ -33,33 +33,6 @@ final class RemoteMuseumPiecesFetcher {
             throw .networkError
         }
         
-        guard let collectionResponse = try? JSONDecoder().decode(CollectionResponse.self, from: data) else {
-            throw .invalidData
-        }
-        
-        return (collectionResponse.orderedItems.map(\.id), collectionResponse.nextPageToken())
-    }
-}
-
-
-private struct CollectionResponse: Codable {
-    let orderedItems: [Item]
-    let next: Next?
-    
-    struct Item: Codable {
-        let id: URL
-    }
-    
-    struct Next: Codable {
-        let id: URL
-    }
-    
-    func nextPageToken() -> String? {
-        guard let url = next?.id,
-              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let token = components.queryItems?.first(where: { $0.name == "pageToken" })?.value else {
-            return nil
-        }
-        return token
+        return try CollectionURLsMapper().map(data: data).get()
     }
 }

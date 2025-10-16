@@ -61,9 +61,20 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         let jsonData = makeCollectionResponse(ids: ids)
         env.client.stubbedGetResult = .success(jsonData)
         
-        let receivedIDs = try await sut.fetchCollectionIDs(nextPageToken: nil)
+        let (receivedIDs, _) = try await sut.fetchCollectionIDs(nextPageToken: nil)
         
         XCTAssertEqual(receivedIDs, ids)
+    }
+    
+    func test_fetchCollectionIDs_deliversNextPageTokenOnHttpResponseWithValidJsonObject() async throws {
+        let sut = makeSUT()
+        let nextPageToken = "any token"
+        let jsonData = makeCollectionResponse(ids: [], nextPageToken: nextPageToken)
+        env.client.stubbedGetResult = .success(jsonData)
+        
+        let (_, receivedPageToken) = try await sut.fetchCollectionIDs(nextPageToken: nil)
+        
+        XCTAssertEqual(receivedPageToken, nextPageToken)
     }
 }
 

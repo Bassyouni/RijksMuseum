@@ -22,7 +22,7 @@ final class RemoteMuseumPiecesFetcher {
         self.httpClient = httpClient
     }
     
-    func fetchCollectionIDs(nextPageToken: String?) async throws(Error) -> [String] {
+    func fetchCollectionIDs(nextPageToken: String?) async throws(Error) -> (ids: [String], nextPageToken: String?) {
         var url = self.url
         
         if let token = nextPageToken {
@@ -37,15 +37,29 @@ final class RemoteMuseumPiecesFetcher {
             throw .invalidData
         }
         
-        return collectionResponse.orderedItems.map(\.id)
+        return (collectionResponse.orderedItems.map(\.id), collectionResponse.nextPageToken())
     }
 }
 
 
 private struct CollectionResponse: Codable {
     let orderedItems: [Item]
+    let next: Next?
     
     struct Item: Codable {
         let id: String
+    }
+    
+    struct Next: Codable {
+        let id: URL
+    }
+    
+    func nextPageToken() -> String? {
+        guard let url = next?.id,
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let token = components.queryItems?.first(where: { $0.name == "pageToken" })?.value else {
+            return nil
+        }
+        return token
     }
 }

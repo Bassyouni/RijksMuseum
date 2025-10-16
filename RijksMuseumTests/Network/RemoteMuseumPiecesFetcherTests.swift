@@ -30,6 +30,18 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         let expectedURL = URL(string: "\(urlString)?pageToken=\(pageToken)")
         XCTAssertEqual(env.client.requestedURLs, [expectedURL])
     }
+    
+    func test_fetchCollectionIDs_deliversErrorOnError() async {
+        let sut = makeSUT()
+        env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
+        
+        do  {
+            _ = try await sut.fetchCollectionIDs(nextPageToken: nil)
+            XCTFail("Expected load places to throw on error")
+        } catch {
+            XCTAssertEqual(error, .networkError)
+        }
+    }
 }
 
 extension RemoteMuseumPiecesFetcherTests {

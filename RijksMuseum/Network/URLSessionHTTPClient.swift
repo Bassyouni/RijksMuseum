@@ -11,6 +11,11 @@ public class URLSessionHTTPClient: HTTPClient {
     
     private let session: URLSession
     
+    public enum Error: Swift.Error {
+        case networkError
+        case invalidData
+    }
+    
     public init(session: URLSession = .shared) {
         self.session = session
     }

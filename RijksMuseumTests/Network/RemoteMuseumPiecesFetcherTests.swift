@@ -115,18 +115,18 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     }
 }
 
-extension RemoteMuseumPiecesFetcherTests {
-    private struct Environment {
+private extension RemoteMuseumPiecesFetcherTests {
+    struct Environment {
         let client = HTTPClientSpy()
     }
     
-    private func makeSUT(url: URL = URL(string: "www.a-url.com")!, file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesFetcher {
+    func makeSUT(url: URL = URL(string: "www.a-url.com")!, file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesFetcher {
         let sut = RemoteMuseumPiecesFetcher(url: url, httpClient: env.client)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
     
-    private func makeCollectionResponse(
+    func makeCollectionResponse(
         urls: [String],
         nextPageToken: String = "any-token"
     ) -> Data {
@@ -143,7 +143,80 @@ extension RemoteMuseumPiecesFetcherTests {
     }
     
     func uniqueURL() -> URL {
-        URL(string:  "www.\(UUID().uuidString).nl")!
+        URL(string: "www.\(UUID().uuidString).nl")!
+    }
+    
+    func makeMuseumPiece(
+        title: String = "Any title",
+        date: String? = nil,
+        creator: String? = nil,
+        imageURL: URL? = nil
+    ) -> MuseumPiece {
+        .init(
+            id: "any",
+            title: title,
+            date: date,
+            creator: creator,
+            image: .init(url: imageURL)
+        )
+    }
+    
+    func makeObjectDetailsResponse(
+        dutchTitle: String? = nil,
+        englishTitle: String? = nil,
+        otherTitle: String? = nil,
+        dutchDate: String? = nil,
+        englishDate: String? = nil,
+        otherDate: String? = nil,
+        dutchCreator: String? = nil,
+        englishCreator: String? = nil,
+        otherCreator: String? = nil
+    ) -> Data {
+        let dutchLanguageID = "http://vocab.getty.edu/aat/300388256"
+        let englishLanguageID = "http://vocab.getty.edu/aat/300388277"
+        let visualItemID = "visual-item-id"
+        
+        let titles = [
+            makeItem(content: englishTitle, type: "Name", languageID: englishLanguageID),
+            makeItem(content: otherTitle, type: "Name", languageID: nil),
+            makeItem(content: dutchTitle, type: "Name", languageID: dutchLanguageID)
+        ].compactMap { $0 }
+        
+        let dates = [
+            makeItem(content: englishDate, type: "Name", languageID: englishLanguageID),
+            makeItem(content: otherDate, type: "Name", languageID: nil),
+            makeItem(content: dutchDate, type: "Name", languageID: dutchLanguageID)
+        ].compactMap { $0 }
+        
+        let creators = [
+            makeItem(content: englishCreator, type: "LinguisticObject", languageID: englishLanguageID),
+            makeItem(content: otherCreator, type: "LinguisticObject", languageID: nil),
+            makeItem(content: dutchCreator, type: "LinguisticObject", languageID: dutchLanguageID)
+        ].compactMap { $0 }
+        
+        let json: [String: Any] = [
+            "identified_by": titles,
+            "produced_by": [
+                "timespan": [
+                    "identified_by": dates
+                ],
+                "referred_to_by": creators
+            ]
+        ]
+        
+        return try! JSONSerialization.data(withJSONObject: json)
+    }
+    
+    func makeItem(content: String?, type: String, languageID: String?) -> [String: Any]? {
+        guard let content = content else { return nil }
+        
+        var item: [String: Any] = [
+            "type": type,
+            "content": content,
+            "language": [["id": languageID ?? "any", "type": "Language"]]
+        ]
+        
+        return item
     }
 }
 

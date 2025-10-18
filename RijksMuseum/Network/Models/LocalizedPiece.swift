@@ -14,7 +14,7 @@ enum Language: Equatable {
 }
 
 struct Localized<T: Equatable>: Equatable {
-    private let values: [Language: T]
+    let values: [Language: T]
     init(_ values: [Language: T]) {
         self.values = values
     }

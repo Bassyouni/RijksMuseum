@@ -115,22 +115,15 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         }
     }
     
-    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLocalizedTitleOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLokalizedTitleOnHttpResponseWithValidJsonObject() async throws {
         let sut = makeSUT()
-        let dutchTitle = "some dutch text"
-        let englishTitle = "some english text"
-        let otherTitle = "some"
-        let model = LocalizedPiece(
-            id: "any",
-            title: .init([.dutch: dutchTitle, .english: englishTitle, .unknown: otherTitle])
+        let (model, json) = makeObjectDetailsResponse(
+            dutchTitle: "some dutch text",
+            englishTitle: "some english text",
+            otherTitle: "some"
         )
-        let jsonData = makeObjectDetailsResponse(
-            id: "any",
-            dutchTitle: dutchTitle,
-            englishTitle: englishTitle,
-            otherTitle: otherTitle
-        )
-        env.client.stubbedGetResult = .success(jsonData)
+    
+        env.client.stubbedGetResult = .success(json)
         
         let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
         
@@ -197,7 +190,7 @@ private extension RemoteMuseumPiecesFetcherTests {
     }
     
     func makeObjectDetailsResponse(
-        id: String = "someID",
+        id: String = UUID().uuidString,
         dutchTitle: String? = nil,
         englishTitle: String? = nil,
         otherTitle: String? = nil,
@@ -207,7 +200,7 @@ private extension RemoteMuseumPiecesFetcherTests {
         dutchCreator: String? = nil,
         englishCreator: String? = nil,
         otherCreator: String? = nil
-    ) -> Data {
+    ) -> (model: LocalizedPiece, json: Data) {
         let dutchLanguageID = "http://vocab.getty.edu/aat/300388256"
         let englishLanguageID = "http://vocab.getty.edu/aat/300388277"
         
@@ -240,7 +233,26 @@ private extension RemoteMuseumPiecesFetcherTests {
             ]
         ]
         
-        return try! JSONSerialization.data(withJSONObject: json)
+        let jsonData = try! JSONSerialization.data(withJSONObject: json)
+        
+        let model = LocalizedPiece(
+            id: id,
+            title: .init(makeLanguageDictionary(dutch: dutchTitle, english: englishTitle, other: otherTitle))
+        )
+        
+        return (model, jsonData)
+    }
+    
+    func makeLanguageDictionary(
+        dutch: String?,
+        english: String?,
+        other: String?,
+    ) -> [Language: String] {
+        var dict: [Language: String] = [:]
+        if let dutch { dict[.dutch] = dutch }
+        if let english { dict[.english] = english }
+        if let other { dict[.unknown] = other }
+        return dict
     }
     
     func makeItem(content: String?, type: String, languageID: String?) -> [String: Any]? {

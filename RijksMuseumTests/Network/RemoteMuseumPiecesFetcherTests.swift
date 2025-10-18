@@ -273,10 +273,17 @@ private extension RemoteMuseumPiecesFetcherTests {
 
 private final class HTTPClientSpy: HTTPClient {
     private(set) var requestedURLs = [URL]()
-    var stubbedGetResult: Result<Data, Error> = .success(Data())
+    var stubbedGetResults: [Result<Data, Error>] = []
+    var stubbedGetResult: Result<Data, Error> {
+        set { stubbedGetResults.append(newValue) }
+        get { stubbedGetResults.first! }
+    }
     
     func get(url: URL) async throws -> Data {
         requestedURLs.append(url)
-        return try stubbedGetResult.get()
+        
+        guard !stubbedGetResults.isEmpty else { return Data() }
+        
+        return try stubbedGetResults.removeFirst().get()
     }
 }

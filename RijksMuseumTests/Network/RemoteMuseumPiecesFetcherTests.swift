@@ -159,6 +159,39 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         
         XCTAssertEqual(receivedModel, model)
     }
+    
+    func test_fetchMuseumPieceDetail_requestsImageURLsInCorrectSequence() async {
+        let sut = makeSUT()
+        let pieceDetailURL = uniqueURL()
+        let visualItemURL = uniqueURL()
+        let digitalObjectURL = uniqueURL()
+        
+        env.client.stubbedGetResults = [
+            .success(makeObjectDetailsResponse(visualItemURL: visualItemURL).json),
+            .success(makeVisualItemJSON(digitalObjectURL: digitalObjectURL)),
+            .success(makeDigitalObjectJSON(iiifURL: uniqueURL()))
+        ]
+
+        _ = try? await sut.fetchMuseumPieceDetail(url: pieceDetailURL)
+
+        XCTAssertEqual(env.client.requestedURLs, [pieceDetailURL, visualItemURL, digitalObjectURL])
+    }
+
+    func test_fetchMuseumPieceDetail_deliversIIIFImageUROnValidResponse() async throws {
+        let sut = makeSUT()
+        let iiifImageURL = uniqueURL()
+        let digitalObjectJSON = makeDigitalObjectJSON(iiifURL: iiifImageURL)
+
+        env.client.stubbedGetResults = [
+            .success(makeObjectDetailsResponse(visualItemURL: uniqueURL()).json),
+            .success(makeVisualItemJSON(digitalObjectURL: uniqueURL())),
+            .success(digitalObjectJSON)
+        ]
+
+        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+
+        XCTAssertEqual(receivedModel.imageURL, iiifImageURL)
+    }
 }
 
 private extension RemoteMuseumPiecesFetcherTests {
@@ -167,7 +200,7 @@ private extension RemoteMuseumPiecesFetcherTests {
     }
     
     func makeSUT(url: URL = URL(string: "www.a-url.com")!, file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesFetcher {
-        let sut = RemoteMuseumPiecesFetcher(url: url, httpClient: env.client)
+        let sut = RemoteMuseumPiecesFetcher(url: url, httpClient: self.env.client)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
@@ -202,7 +235,8 @@ private extension RemoteMuseumPiecesFetcherTests {
         otherDate: String? = nil,
         dutchCreator: String? = nil,
         englishCreator: String? = nil,
-        otherCreator: String? = nil
+        otherCreator: String? = nil,
+        visualItemURL: URL? = nil
     ) -> (model: LocalizedPiece, json: Data) {
         let dutchLanguageID = "http://vocab.getty.edu/aat/300388256"
         let englishLanguageID = "http://vocab.getty.edu/aat/300388277"
@@ -225,7 +259,7 @@ private extension RemoteMuseumPiecesFetcherTests {
             makeItem(content: dutchCreator, type: "LinguisticObject", languageID: dutchLanguageID)
         ].compactMap { $0 }
         
-        let json: [String: Any] = [
+        var json: [String: Any] = [
             "id": id,
             "identified_by": titles,
             "produced_by": [
@@ -236,13 +270,21 @@ private extension RemoteMuseumPiecesFetcherTests {
             ]
         ]
         
+        if let url = visualItemURL {
+            json["shows"] = [[
+                    "id": url.absoluteString,
+                    "type": "VisualItem"
+                ]]
+        }
+        
         let jsonData = try! JSONSerialization.data(withJSONObject: json)
         
         let model = LocalizedPiece(
             id: id,
             title: makeLocalizedModel(dutch: dutchTitle, english: englishTitle, other: otherTitle),
             date: makeLocalizedModel(dutch: dutchDate, english: englishDate, other: otherDate),
-            creator: makeLocalizedModel(dutch: dutchCreator, english: englishCreator, other: otherCreator)
+            creator: makeLocalizedModel(dutch: dutchCreator, english: englishCreator, other: otherCreator),
+            imageURL: nil
         )
         
         return (model, jsonData)
@@ -262,12 +304,30 @@ private extension RemoteMuseumPiecesFetcherTests {
     
     func makeItem(content: String?, type: String, languageID: String?) -> [String: Any]? {
         guard let content = content else { return nil }
-        
+
         return [
             "type": type,
             "content": content,
             "language": [["id": languageID ?? "any", "type": "Language"]]
         ]
+    }
+
+    func makeVisualItemJSON(digitalObjectURL: URL) -> Data {
+        let json: [String: Any] = [
+            "digitally_shown_by": [
+                ["id": digitalObjectURL.absoluteString]
+            ]
+        ]
+        return try! JSONSerialization.data(withJSONObject: json)
+    }
+
+    func makeDigitalObjectJSON(iiifURL: URL) -> Data {
+        let json: [String: Any] = [
+            "access_point": [
+                ["id": iiifURL.absoluteString]
+            ]
+        ]
+        return try! JSONSerialization.data(withJSONObject: json)
     }
 }
 

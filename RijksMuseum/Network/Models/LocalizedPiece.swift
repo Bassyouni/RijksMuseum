@@ -25,4 +25,5 @@ struct LocalizedPiece: Equatable {
     let title: Localized<String>?
     let date: Localized<String>?
     let creator: Localized<String>?
+    let imageURL: URL?
 }

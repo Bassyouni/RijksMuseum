@@ -43,6 +43,39 @@ final class RemoteMuseumPiecesFetcher {
             throw .networkError
         }
 
-        return try await PieceDetailsMapper().map(data: data).get()
+        let mapper = PieceDetailsMapper()
+        let (piece, visualItemURL) = try await mapper.map(data: data).get()
+        let imageURL = await fetchImageURL(from: visualItemURL, mapper: mapper)
+
+        return LocalizedPiece(
+            id: piece.id,
+            title: piece.title,
+            date: piece.date,
+            creator: piece.creator,
+            imageURL: imageURL
+        )
+    }
+
+    private func fetchImageURL(from visualItemURL: URL?, mapper: PieceDetailsMapper) async -> URL? {
+        guard let visualItemURL = visualItemURL else { return nil }
+        guard let digitalObjectURL = await fetchDigitalObjectURL(from: visualItemURL, mapper: mapper) else { return nil }
+        guard let iiifURL = await fetchIIIFImageURL(from: digitalObjectURL, mapper: mapper) else { return nil }
+        return iiifURL
+    }
+
+    private func fetchDigitalObjectURL(from visualItemURL: URL, mapper: PieceDetailsMapper) async -> URL? {
+        guard let data = try? await httpClient.get(url: visualItemURL),
+              let url = mapper.mapVisualItem(data: data) else {
+            return nil
+        }
+        return url
+    }
+
+    private func fetchIIIFImageURL(from digitalObjectURL: URL, mapper: PieceDetailsMapper) async -> URL? {
+        guard let data = try? await httpClient.get(url: digitalObjectURL),
+              let url = mapper.mapDigitalObject(data: data) else {
+            return nil
+        }
+        return url
     }
 }

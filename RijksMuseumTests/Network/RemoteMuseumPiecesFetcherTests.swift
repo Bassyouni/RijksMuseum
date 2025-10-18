@@ -129,6 +129,21 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         
         XCTAssertEqual(receivedModel, model)
     }
+    
+    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLokalizedDateSpanOnHttpResponseWithValidJsonObject() async throws {
+        let sut = makeSUT()
+        let (model, json) = makeObjectDetailsResponse(
+            dutchDate: "any dutch date",
+            englishDate: "any english date",
+            otherDate: "any"
+        )
+    
+        env.client.stubbedGetResult = .success(json)
+        
+        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        
+        XCTAssertEqual(receivedModel, model)
+    }
 }
 
 private extension RemoteMuseumPiecesFetcherTests {
@@ -174,18 +189,6 @@ private extension RemoteMuseumPiecesFetcherTests {
             date: date,
             creator: creator,
             image: .init(url: imageURL)
-        )
-    }
-    
-    func makeLocalizedPiece(
-        id: String = "someID",
-        dutchTitle: String,
-        englishTitle: String,
-        otherTitle: String
-    ) -> LocalizedPiece {
-        return .init(
-            id: "any",
-            title: .init([.dutch: dutchTitle, .english: englishTitle, .unknown: otherTitle])
         )
     }
     
@@ -237,22 +240,23 @@ private extension RemoteMuseumPiecesFetcherTests {
         
         let model = LocalizedPiece(
             id: id,
-            title: .init(makeLanguageDictionary(dutch: dutchTitle, english: englishTitle, other: otherTitle))
+            title: makeLocalizedModel(dutch: dutchTitle, english: englishTitle, other: otherTitle),
+            date: makeLocalizedModel(dutch: dutchDate, english: englishDate, other: otherDate)
         )
         
         return (model, jsonData)
     }
     
-    func makeLanguageDictionary(
+    func makeLocalizedModel(
         dutch: String?,
         english: String?,
         other: String?,
-    ) -> [Language: String] {
+    ) -> Localized<String>? {
         var dict: [Language: String] = [:]
         if let dutch { dict[.dutch] = dutch }
         if let english { dict[.english] = english }
         if let other { dict[.unknown] = other }
-        return dict
+        return dict.isEmpty ? nil : .init(dict)
     }
     
     func makeItem(content: String?, type: String, languageID: String?) -> [String: Any]? {

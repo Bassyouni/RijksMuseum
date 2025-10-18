@@ -40,14 +40,12 @@ final class PieceDetailsMapper {
 
         struct LanguageReference: Codable {
             let id: String
-
-            var languageCode: LanguageDTO {
-                LanguageDTO.from(code: id)
-            }
         }
 
         var detectedLanguage: LanguageDTO {
-            language?.first?.languageCode ?? .other
+            guard let code = language?.first?.id else { return .other }
+            
+            return LanguageDTO.from(code: code)
         }
     }
 
@@ -59,6 +57,14 @@ final class PieceDetailsMapper {
         static func from(code: String) -> LanguageDTO {
             return LanguageDTO(rawValue: code) ?? .other
         }
+        
+        var languge: Language {
+            switch self {
+            case .dutch: return .dutch
+            case .english: return .english
+            case .other: return .unknown
+            }
+        }
     }
     
     
@@ -67,48 +73,22 @@ final class PieceDetailsMapper {
             return .failure(RemoteMuseumPiecesFetcher.Error.invalidData)
         }
 
-        let titles = root.identifiedBy?
-            .filter { $0.type == "Name" }
-            .compactMap { item -> (Language, String)? in
-                guard let content = item.content, !content.isEmpty else { return nil }
-
-                let language: Language
-                switch item.detectedLanguage {
-                case .dutch:
-                    language = .dutch
-                case .english:
-                    language = .english
-                case .other:
-                    language = .unknown
-                }
-
-                return (language, content)
-            }
-
-        let titleDict = Dictionary(titles ?? [], uniquingKeysWith: { first, _ in first })
-        let localizedTitle = titleDict.isEmpty ? nil : Localized(titleDict)
-
-        let dates = root.producedBy?.timespan?.identifiedBy?
-            .filter { $0.type == "Name" }
-            .compactMap { item -> (Language, String)? in
-                guard let content = item.content, !content.isEmpty else { return nil }
-
-                let language: Language
-                switch item.detectedLanguage {
-                case .dutch:
-                    language = .dutch
-                case .english:
-                    language = .english
-                case .other:
-                    language = .unknown
-                }
-
-                return (language, content)
-            }
-
-        let dateDict = Dictionary(dates ?? [], uniquingKeysWith: { first, _ in first })
-        let localizedDate = dateDict.isEmpty ? nil : Localized(dateDict)
+        let localizedTitle = extractLocalized(from: root.identifiedBy, ofType: "Name")
+        let localizedDate = extractLocalized(from: root.producedBy?.timespan?.identifiedBy, ofType: "Name")
 
         return .success(LocalizedPiece(id: root.id, title: localizedTitle, date: localizedDate))
+    }
+
+    private func extractLocalized(from items: [LocalizedContent]?, ofType type: String) -> Localized<String>? {
+        let mappedItems = items?
+            .filter { $0.type == type }
+            .compactMap { item -> (Language, String)? in
+                guard let content = item.content, !content.isEmpty else { return nil }
+
+                return (item.detectedLanguage.languge, content)
+            }
+
+        let dict = Dictionary(mappedItems ?? [], uniquingKeysWith: { first, _ in first })
+        return dict.isEmpty ? nil : Localized(dict)
     }
 }

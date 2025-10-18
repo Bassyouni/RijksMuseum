@@ -16,6 +16,7 @@ final class PieceDetailsMapper {
 
         struct ProducedBy: Codable {
             let timespan: Timespan?
+            let referredToBy: [LocalizedContent]?
 
             struct Timespan: Codable {
                 let identifiedBy: [LocalizedContent]?
@@ -23,6 +24,11 @@ final class PieceDetailsMapper {
                 enum CodingKeys: String, CodingKey {
                     case identifiedBy = "identified_by"
                 }
+            }
+
+            enum CodingKeys: String, CodingKey {
+                case timespan
+                case referredToBy = "referred_to_by"
             }
         }
 
@@ -67,7 +73,6 @@ final class PieceDetailsMapper {
         }
     }
     
-    
     func map(data: Data) -> Result<(LocalizedPiece), RemoteMuseumPiecesFetcher.Error> {
         guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
             return .failure(RemoteMuseumPiecesFetcher.Error.invalidData)
@@ -75,8 +80,9 @@ final class PieceDetailsMapper {
 
         let localizedTitle = extractLocalized(from: root.identifiedBy, ofType: "Name")
         let localizedDate = extractLocalized(from: root.producedBy?.timespan?.identifiedBy, ofType: "Name")
+        let localizedCreator = extractLocalized(from: root.producedBy?.referredToBy, ofType: "LinguisticObject")
 
-        return .success(LocalizedPiece(id: root.id, title: localizedTitle, date: localizedDate))
+        return .success(LocalizedPiece(id: root.id, title: localizedTitle, date: localizedDate, creator: localizedCreator))
     }
 
     private func extractLocalized(from items: [LocalizedContent]?, ofType type: String) -> Localized<String>? {

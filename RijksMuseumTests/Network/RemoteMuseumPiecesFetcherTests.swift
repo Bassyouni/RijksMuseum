@@ -144,6 +144,21 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         
         XCTAssertEqual(receivedModel, model)
     }
+    
+    func test_fetchMuseumPieceDetail_deliversLocalizedCreatorOnValidResponse() async throws {
+        let sut = makeSUT()
+        let (model, json) = makeObjectDetailsResponse(
+            dutchCreator: "any dutch",
+            englishCreator: "any english",
+            otherCreator: "any other"
+        )
+    
+        env.client.stubbedGetResult = .success(json)
+        
+        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        
+        XCTAssertEqual(receivedModel, model)
+    }
 }
 
 private extension RemoteMuseumPiecesFetcherTests {
@@ -175,21 +190,6 @@ private extension RemoteMuseumPiecesFetcherTests {
     
     func uniqueURL() -> URL {
         URL(string: "www.\(UUID().uuidString).nl")!
-    }
-    
-    func makeMuseumPiece(
-        title: String = "Any title",
-        date: String? = nil,
-        creator: String? = nil,
-        imageURL: URL? = nil
-    ) -> MuseumPiece {
-        .init(
-            id: "any",
-            title: title,
-            date: date,
-            creator: creator,
-            image: .init(url: imageURL)
-        )
     }
     
     func makeObjectDetailsResponse(
@@ -241,7 +241,8 @@ private extension RemoteMuseumPiecesFetcherTests {
         let model = LocalizedPiece(
             id: id,
             title: makeLocalizedModel(dutch: dutchTitle, english: englishTitle, other: otherTitle),
-            date: makeLocalizedModel(dutch: dutchDate, english: englishDate, other: otherDate)
+            date: makeLocalizedModel(dutch: dutchDate, english: englishDate, other: otherDate),
+            creator: makeLocalizedModel(dutch: dutchCreator, english: englishCreator, other: otherCreator)
         )
         
         return (model, jsonData)

@@ -58,7 +58,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         }
     }
     
-    func test_fetchCollectionURLs_deliversURLsOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchCollectionURLs_deliversURLsOnValidResponse() async throws {
         let sut = makeSUT()
         let urls = [uniqueURL(), uniqueURL()]
         let jsonData = makeCollectionResponse(urls: urls.map(\.absoluteString))
@@ -69,7 +69,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         XCTAssertEqual(receivedURLs, urls)
     }
     
-    func test_fetchCollectionURLs_deliversNextPageTokenOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchCollectionURLs_deliversNextPageTokenOnValidResponse() async throws {
         let sut = makeSUT()
         let nextPageToken = "any token"
         let jsonData = makeCollectionResponse(urls: [], nextPageToken: nextPageToken)
@@ -115,7 +115,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         }
     }
     
-    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLokalizedTitleOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchMuseumPieceDetail_deliversLocalizedTitleOnValidResponse() async throws {
         let sut = makeSUT()
         let (model, json) = makeObjectDetailsResponse(
             dutchTitle: "some dutch text",
@@ -130,7 +130,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         XCTAssertEqual(receivedModel, model)
     }
     
-    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLokalizedDateSpanOnHttpResponseWithValidJsonObject() async throws {
+    func test_fetchMuseumPieceDetail_deliversLocalizedDateOnValidResponse() async throws {
         let sut = makeSUT()
         let (model, json) = makeObjectDetailsResponse(
             dutchDate: "any dutch date",

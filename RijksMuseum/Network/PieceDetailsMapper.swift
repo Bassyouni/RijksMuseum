@@ -7,9 +7,11 @@
 
 import Foundation
 
-final class PieceDetailsMapper {
+struct PieceDetailsMapper {
 
-    func map(data: Data) -> Result<(piece: LocalizedPiece, visualItemURL: URL?), RemoteMuseumPiecesFetcher.Error> {
+    private init() {}
+
+    static func map(data: Data) -> Result<(piece: LocalizedPiece, visualItemURL: URL?), RemoteMuseumPiecesFetcher.Error> {
         guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
             return .failure(.invalidData)
         }
@@ -30,7 +32,7 @@ final class PieceDetailsMapper {
         return .success((piece: piece, visualItemURL: visualItemURL))
     }
 
-    func mapVisualItem(data: Data) -> URL? {
+    static func mapVisualItem(data: Data) -> URL? {
         guard let visualItem = try? JSONDecoder().decode(VisualItem.self, from: data),
               let digitalRef = visualItem.digitallyShownBy?.first,
               let url = URL(string: digitalRef.id) else {
@@ -39,7 +41,7 @@ final class PieceDetailsMapper {
         return url
     }
 
-    func mapDigitalObject(data: Data) -> URL? {
+    static func mapDigitalObject(data: Data) -> URL? {
         guard let digitalObject = try? JSONDecoder().decode(DigitalObject.self, from: data),
               let iiifURLString = digitalObject.accessPoint?.first?.id,
               let iiifURL = URL(string: iiifURLString) else {
@@ -47,24 +49,24 @@ final class PieceDetailsMapper {
         }
         return iiifURL
     }
-    
-    private func extractVisualItemURL(from root: Root) -> URL? {
+
+    private static func extractVisualItemURL(from root: Root) -> URL? {
         guard let visualRef = root.shows?.first(where: { $0.type == "VisualItem" }),
               let url = URL(string: visualRef.id) else {
             return nil
         }
         return url
     }
-    
-    private func extractLocalized(from items: [LocalizedContent]?, ofType type: String) -> Localized<String>? {
+
+    private static func extractLocalized(from items: [LocalizedContent]?, ofType type: String) -> Localized<String>? {
         let mappedItems = items?
             .filter { $0.type == type }
             .compactMap { item -> (Language, String)? in
                 guard let content = item.content, !content.isEmpty else { return nil }
-                
+
                 return (item.detectedLanguage.languge, content)
             }
-        
+
         let dict = Dictionary(mappedItems ?? [], uniquingKeysWith: { first, _ in first })
         return dict.isEmpty ? nil : Localized(dict)
     }

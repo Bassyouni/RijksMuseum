@@ -34,7 +34,7 @@ final class RemoteMuseumPiecesFetcher {
             throw .networkError
         }
         
-        return try await CollectionURLsMapper().map(data: data).get()
+        return try await CollectionURLsMapper.map(data: data).get()
     }
     
     @concurrent
@@ -43,9 +43,8 @@ final class RemoteMuseumPiecesFetcher {
             throw .networkError
         }
 
-        let mapper = PieceDetailsMapper()
-        let (piece, visualItemURL) = try await mapper.map(data: data).get()
-        let imageURL = await fetchImageURL(from: visualItemURL, mapper: mapper)
+        let (piece, visualItemURL) = try await PieceDetailsMapper.map(data: data).get()
+        let imageURL = await fetchImageURL(from: visualItemURL)
 
         return LocalizedPiece(
             id: piece.id,
@@ -56,24 +55,27 @@ final class RemoteMuseumPiecesFetcher {
         )
     }
 
-    private func fetchImageURL(from visualItemURL: URL?, mapper: PieceDetailsMapper) async -> URL? {
+    @concurrent
+    private func fetchImageURL(from visualItemURL: URL?) async -> URL? {
         guard let visualItemURL = visualItemURL else { return nil }
-        guard let digitalObjectURL = await fetchDigitalObjectURL(from: visualItemURL, mapper: mapper) else { return nil }
-        guard let iiifURL = await fetchIIIFImageURL(from: digitalObjectURL, mapper: mapper) else { return nil }
+        guard let digitalObjectURL = await fetchDigitalObjectURL(from: visualItemURL) else { return nil }
+        guard let iiifURL = await fetchIIIFImageURL(from: digitalObjectURL) else { return nil }
         return iiifURL
     }
 
-    private func fetchDigitalObjectURL(from visualItemURL: URL, mapper: PieceDetailsMapper) async -> URL? {
+    @concurrent
+    private func fetchDigitalObjectURL(from visualItemURL: URL) async -> URL? {
         guard let data = try? await httpClient.get(url: visualItemURL),
-              let url = mapper.mapVisualItem(data: data) else {
+              let url = await PieceDetailsMapper.mapVisualItem(data: data) else {
             return nil
         }
         return url
     }
 
-    private func fetchIIIFImageURL(from digitalObjectURL: URL, mapper: PieceDetailsMapper) async -> URL? {
+    @concurrent
+    private func fetchIIIFImageURL(from digitalObjectURL: URL) async -> URL? {
         guard let data = try? await httpClient.get(url: digitalObjectURL),
-              let url = mapper.mapDigitalObject(data: data) else {
+              let url = await PieceDetailsMapper.mapDigitalObject(data: data) else {
             return nil
         }
         return url

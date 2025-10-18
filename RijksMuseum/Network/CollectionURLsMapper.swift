@@ -7,13 +7,15 @@
 
 import Foundation
 
-final class CollectionURLsMapper {
-    
-    func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesFetcher.Error> {
+struct CollectionURLsMapper {
+
+    private init() {}
+
+    static func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesFetcher.Error> {
         guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
-            return .failure(RemoteMuseumPiecesFetcher.Error.invalidData)
+            return .failure(.invalidData)
         }
-        
+
         return .success((root.orderedItems.map(\.id), root.nextPageToken()))
     }
 }

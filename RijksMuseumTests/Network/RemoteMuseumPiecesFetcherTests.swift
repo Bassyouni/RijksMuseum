@@ -8,6 +8,7 @@
 import XCTest
 @testable import RijksMuseum
 
+@MainActor
 final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     private let env = Environment()
     
@@ -113,6 +114,28 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
             XCTAssertEqual(error, .invalidData)
         }
     }
+    
+    func test_fetchMuseumPieceDetail_deliversDetailedObjectWithLocalizedTitleOnHttpResponseWithValidJsonObject() async throws {
+        let sut = makeSUT()
+        let dutchTitle = "some dutch text"
+        let englishTitle = "some english text"
+        let otherTitle = "some"
+        let model = LocalizedPiece(
+            id: "any",
+            title: .init([.dutch: dutchTitle, .english: englishTitle, .unknown: otherTitle])
+        )
+        let jsonData = makeObjectDetailsResponse(
+            id: "any",
+            dutchTitle: dutchTitle,
+            englishTitle: englishTitle,
+            otherTitle: otherTitle
+        )
+        env.client.stubbedGetResult = .success(jsonData)
+        
+        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        
+        XCTAssertEqual(receivedModel, model)
+    }
 }
 
 private extension RemoteMuseumPiecesFetcherTests {
@@ -161,7 +184,20 @@ private extension RemoteMuseumPiecesFetcherTests {
         )
     }
     
+    func makeLocalizedPiece(
+        id: String = "someID",
+        dutchTitle: String,
+        englishTitle: String,
+        otherTitle: String
+    ) -> LocalizedPiece {
+        return .init(
+            id: "any",
+            title: .init([.dutch: dutchTitle, .english: englishTitle, .unknown: otherTitle])
+        )
+    }
+    
     func makeObjectDetailsResponse(
+        id: String = "someID",
         dutchTitle: String? = nil,
         englishTitle: String? = nil,
         otherTitle: String? = nil,
@@ -174,7 +210,6 @@ private extension RemoteMuseumPiecesFetcherTests {
     ) -> Data {
         let dutchLanguageID = "http://vocab.getty.edu/aat/300388256"
         let englishLanguageID = "http://vocab.getty.edu/aat/300388277"
-        let visualItemID = "visual-item-id"
         
         let titles = [
             makeItem(content: englishTitle, type: "Name", languageID: englishLanguageID),
@@ -195,6 +230,7 @@ private extension RemoteMuseumPiecesFetcherTests {
         ].compactMap { $0 }
         
         let json: [String: Any] = [
+            "id": id,
             "identified_by": titles,
             "produced_by": [
                 "timespan": [
@@ -210,13 +246,11 @@ private extension RemoteMuseumPiecesFetcherTests {
     func makeItem(content: String?, type: String, languageID: String?) -> [String: Any]? {
         guard let content = content else { return nil }
         
-        var item: [String: Any] = [
+        return [
             "type": type,
             "content": content,
             "language": [["id": languageID ?? "any", "type": "Language"]]
         ]
-        
-        return item
     }
 }
 

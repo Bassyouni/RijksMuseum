@@ -38,11 +38,11 @@ final class RemoteMuseumPiecesFetcher {
     }
     
     @concurrent
-    func fetchMuseumPieceDetail(url: URL) async throws(Error) -> MuseumPiece {
-        guard let _ = try? await httpClient.get(url: url) else {
+    func fetchMuseumPieceDetail(url: URL) async throws(Error) -> LocalizedPiece {
+        guard let data = try? await httpClient.get(url: url) else {
             throw .networkError
         }
-        
-        throw .invalidData
+
+        return try await PieceDetailsMapper().map(data: data).get()
     }
 }

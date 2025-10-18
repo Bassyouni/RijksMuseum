@@ -38,6 +38,3 @@ final class CollectionURLsMapper {
         return .success((root.orderedItems.map(\.id), root.nextPageToken()))
     }
 }
-
-
-

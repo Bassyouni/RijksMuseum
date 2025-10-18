@@ -8,7 +8,18 @@
 import Foundation
 
 final class CollectionURLsMapper {
-    private struct Root: Codable {
+    
+    func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesFetcher.Error> {
+        guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
+            return .failure(RemoteMuseumPiecesFetcher.Error.invalidData)
+        }
+        
+        return .success((root.orderedItems.map(\.id), root.nextPageToken()))
+    }
+}
+
+private extension CollectionURLsMapper {
+    struct Root: Codable {
         let orderedItems: [Item]
         let next: Next?
         
@@ -22,19 +33,11 @@ final class CollectionURLsMapper {
         }
     }
     
-    private struct Item: Codable {
+    struct Item: Codable {
         let id: URL
     }
     
-    private struct Next: Codable {
+    struct Next: Codable {
         let id: URL
-    }
-    
-    func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesFetcher.Error> {
-        guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
-            return .failure(RemoteMuseumPiecesFetcher.Error.invalidData)
-        }
-        
-        return .success((root.orderedItems.map(\.id), root.nextPageToken()))
     }
 }

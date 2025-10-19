@@ -14,6 +14,7 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadData_requestsInitialPiecesFromPaginator() async throws {
         let sut = makeSUT()
+        env.paginator.stubbedResult = .success([])
         
         await sut.loadData()
         
@@ -22,7 +23,6 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadData_whenPaginatorFails_showsError() async throws {
         let sut = makeSUT()
-        env.paginator.needToControlState = true
         
         async let loadData: () = sut.loadData()
         await env.paginator.waitForLoadInitalPiecesToStart()
@@ -33,18 +33,21 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(sut.viewState, .error("Something went wrong"))
     }
     
-    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
-        let sut = makeSUT()
-        let pieces = [makePiece(), makePiece()]
-        env.paginator.needToControlState = true
-        
-        async let loadData: () = sut.loadData()
+    fileprivate func extractedFunc(_ sut: PiecesListViewModel, _ pieces: [Piece], _ loadData: ()) async {
         await env.paginator.waitForLoadInitalPiecesToStart()
         XCTAssertEqual(sut.viewState, .loading)
         
         env.paginator.completeWith(pieces)
         await loadData
         XCTAssertEqual(sut.viewState, .loaded(pieces))
+    }
+    
+    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
+        let sut = makeSUT()
+        let pieces = [makePiece(), makePiece()]
+        
+        async let loadData: () = sut.loadData()
+        await extractedFunc(sut, pieces, loadData)
     }
     
 }
@@ -75,15 +78,14 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
     private(set) var loadInitialPiecesCallCount: Int = 0
     private(set) var loadMorePiecesCallCount: Int = 0
     
-    var needToControlState: Bool = false
+    var stubbedResult: Result<[Piece], PaginationError>?
     private var continuation: CheckedContinuation<[Piece], Error>?
-    private var stubbedLoadInitliaPieces: Result<[Piece], PaginationError> = .success([])
     
     func loadInitialPieces() async throws(PaginationError) -> [Piece] {
         loadInitialPiecesCallCount += 1
         
-        guard needToControlState else {
-            return try stubbedLoadInitliaPieces.get()
+        if let stubbedResult = stubbedResult {
+            return try stubbedResult.get()
         }
         
         return try await returnContinuation()
@@ -92,8 +94,8 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
     func loadMorePieces() async throws(PaginationError) -> [Piece] {
         loadMorePiecesCallCount += 1
         
-        guard needToControlState else {
-            return try stubbedLoadInitliaPieces.get()
+        if let stubbedResult = stubbedResult {
+            return try stubbedResult.get()
         }
         
         return try await returnContinuation()

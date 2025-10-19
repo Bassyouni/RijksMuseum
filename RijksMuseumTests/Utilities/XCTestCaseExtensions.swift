@@ -19,6 +19,6 @@ extension XCTestCase {
     }
 }
 
-var anyError: Error {
+var anyError: NSError {
     NSError(domain: "test", code: 0)
 }

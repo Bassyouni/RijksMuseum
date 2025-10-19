@@ -12,12 +12,25 @@ import XCTest
 final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
     
     private let env = Environment()
+    private let batchCount = 10
     
+    func test_loadInitialPieces_throwsOnLoaderFailure() async {
+        let sut = makeSUT()
+        env.loader.stubbedLoadCollectionURLsResult = .failure(anyError)
+        
+        do {
+            _ = try await sut.loadInitialPieces()
+            XCTFail("Expected to receive an error")
+        } catch {
+            XCTAssertEqual(error as NSError, anyError)
+        }
+    }
+
     func test_loadInitialPieces_loadsFirstTenPiecesWithCorrectURLs() async {
         let sut = makeSUT()
-        let first10PiecesURLs = makePieces(count: 10).map { URL(string: $0.id)! }
+        let first10PiecesURLs = makePieces(count: batchCount).map { URL(string: $0.id)! }
         env.loader.stubbedLoadCollectionURLsResult = .success((first10PiecesURLs + [uniqueURL()], nil))
-        env.loader.stubbedLoadMuseumPieceDetailResults = (makePieces(count: 10)).map { .success($0) }
+        env.loader.stubbedLoadMuseumPieceDetailResults = (makePieces(count: batchCount)).map { .success($0) }
         
         _ = try? await sut.loadInitialPieces()
         

@@ -41,9 +41,9 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         layer.cornerRadius = 8
         layer.masksToBounds = true
         
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-        imageView.backgroundColor = .systemGray6
+//        imageView.backgroundColor = .systemGray2
         
         titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
@@ -79,10 +79,12 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         shimmerView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
+            contentView.widthAnchor.constraint(equalToConstant: 180),
+            
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageView.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.65),
+            imageView.heightAnchor.constraint(equalToConstant: 250),
             
             shimmerView.topAnchor.constraint(equalTo: imageView.topAnchor),
             shimmerView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
@@ -111,20 +113,18 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         
         let imageURL = imageResizer.newImageURL(
             from: piece.imageURL,
-            width: 200,
+            width: Int(UIScreen.main.bounds.width),
             height: 250
         )
         loadImage(from: imageURL)
     }
     
     private func loadImage(from url: URL?) {
-        guard let url = url else {
-            imageView.image = nil
-            showShimmer()
-            return
-        }
-        
         showShimmer()
+        
+        guard let url = url else {
+            return imageView.image = nil
+        }
         
         imageView.kf.setImage(
             with: url,

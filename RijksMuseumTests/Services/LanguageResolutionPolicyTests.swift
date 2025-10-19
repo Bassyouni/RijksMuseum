@@ -10,28 +10,32 @@ import XCTest
 
 @MainActor
 final class LanguageResolutionPolicyTests: XCTestCase {
+    private let dutch = UUID().uuidString
+    private let english = UUID().uuidString
+    private let unknown = UUID().uuidString
+    
     func test_resolve_picksDutchAsThePreferdLanguage() {
         let sut = makeSUT()
         
-        let received = sut.resolve(from: [.unknown: "unknowun", .dutch: "dutch", .english: "english"])
+        let received = sut.resolve(from: [.unknown: unknown, .dutch: dutch, .english: english])
         
-        XCTAssertEqual(received, "dutch")
+        XCTAssertEqual(received, dutch)
     }
     
     func test_resolve_whenDutchIsNotAvailable_fallsbackOnEnglish() {
         let sut = makeSUT()
         
-        let received = sut.resolve(from: [.unknown: "unknowun", .english: "english"])
+        let received = sut.resolve(from: [.unknown: unknown, .english: english])
         
-        XCTAssertEqual(received, "english")
+        XCTAssertEqual(received, english)
     }
     
     func test_resolve_whenNeitherThePreffedOrTheFallBackExists_picksUnknown() {
         let sut = makeSUT()
         
-        let received = sut.resolve(from: [.unknown: "unknowun"])
+        let received = sut.resolve(from: [.unknown: unknown])
         
-        XCTAssertEqual(received, "unknowun")
+        XCTAssertEqual(received, unknown)
     }
     
     func test_resolve_whenNoLanguagesAreProvided_returnsNil() {

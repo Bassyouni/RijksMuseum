@@ -3,7 +3,9 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Read(/Users/bassyouni/Desktop/Spike/Spike/Spike/**)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

@@ -37,9 +37,11 @@ final class PiecesListViewModel {
     }
     
     func loadMore() async {
+        guard case .loaded(let currentPieces) = viewState else { return }
         isLoadingMore = true
         defer { isLoadingMore = false }
         
-        _ = try? await paginator.loadMorePieces()
+        let newPieces = try? await paginator.loadMorePieces()
+        viewState = .loaded(currentPieces + (newPieces ?? []))
     }
 }

@@ -73,6 +73,29 @@ final class PiecesListViewModelTests: XCTestCase {
         await loadMore
         XCTAssertEqual(sut.isLoadingMore, false)
     }
+    
+    func test_loadMore_whenNotInLoadedState_doesNothing() async {
+        let sut = makeSUT()
+        env.paginator.stubbedResult = .success([])
+        
+        await sut.loadMore()
+        
+        XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 0)
+    }
+    
+    func test_loadMore_appendsPiecesToExistingLoaded() async {
+        let sut = makeSUT()
+        let initialPieces = [makePiece(), makePiece()]
+        let newPieces = [makePiece(), makePiece()]
+        
+        env.paginator.stubbedResult = .success(initialPieces)
+        await sut.loadData()
+        
+        env.paginator.stubbedResult = .success(newPieces)
+        await sut.loadMore()
+        
+        XCTAssertEqual(sut.viewState, .loaded(initialPieces + newPieces))
+    }
 }
 
 private extension PiecesListViewModelTests {

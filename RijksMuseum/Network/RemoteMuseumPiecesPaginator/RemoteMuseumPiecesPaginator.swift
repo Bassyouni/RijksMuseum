@@ -7,12 +7,7 @@
 
 import Foundation
 
-enum PaginationError: Error {
-    case noMorePieces
-    case unknownError
-}
-
-final class RemoteMuseumPiecesPaginator {
+final class RemoteMuseumPiecesPaginator: MuseumPiecesPaginator {
     
     private let batchCount = 10
     private var nextPageToken: String?

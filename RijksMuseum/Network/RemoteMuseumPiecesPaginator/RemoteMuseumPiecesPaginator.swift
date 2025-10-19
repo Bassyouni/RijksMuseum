@@ -10,6 +10,7 @@ import Foundation
 final class RemoteMuseumPiecesPaginator {
     
     private let batchCount = 10
+    private var currentBatchURLs = [URL]()
     private let loader: MuseumPiecesLoader
     private let languagePolicy: LanguageResolutionPolicy
     
@@ -20,10 +21,19 @@ final class RemoteMuseumPiecesPaginator {
     
     func loadInitialPieces() async throws -> [Piece] {
         let (urls, _) = try await loader.loadCollectionURLs(nextPageToken: nil)
+        currentBatchURLs = urls
+        defer { currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount)) }
         
         let firstBatchURLs = Array(urls.prefix(batchCount))
-        
+
         return await loadPieces(for: firstBatchURLs)
+    }
+    
+    func loadMorePieces() async throws -> [Piece] {
+        let urls = currentBatchURLs.prefix(batchCount)
+        defer { currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount)) }
+        
+        return await loadPieces(for: Array(urls))
     }
     
     private func loadPieces(for urls: [URL]) async -> [Piece] {

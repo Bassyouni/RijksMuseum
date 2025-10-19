@@ -108,7 +108,7 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
     }
 }
 
-private extension Array where Element == LocalizedPiece {
+extension Array where Element == LocalizedPiece {
     func mapToPieces() -> [MuseumPiece] {
         self.map {
             MuseumPiece(

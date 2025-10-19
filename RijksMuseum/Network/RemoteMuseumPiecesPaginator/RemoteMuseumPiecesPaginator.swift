@@ -21,33 +21,32 @@ final class RemoteMuseumPiecesPaginator {
     }
     
     func loadInitialPieces() async throws -> [Piece] {
-        let (urls, nextPageToken) = try await loader.loadCollectionURLs(nextPageToken: nil)
-        currentBatchURLs = urls
-        self.nextPageToken = nextPageToken
-        defer { currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount)) }
-        
-        let firstBatchURLs = Array(urls.prefix(batchCount))
-
-        return await loadPieces(for: firstBatchURLs)
+        try await loadCollectionURLs()
+        return await processNextBatch()
     }
     
     func loadMorePieces() async throws -> [Piece] {
-        var urls = [URL]()
-        let nextBatch = currentBatchURLs.prefix(batchCount)
-        
-        if urls.isEmpty {
-            let (receivedURLs, nextPageToken) = try await loader.loadCollectionURLs(nextPageToken: nextPageToken)
-            urls = receivedURLs
-            currentBatchURLs = receivedURLs
-            self.nextPageToken = nextPageToken
-        }
-        else {
-            urls = Array(nextBatch)
+        if currentBatchURLs.isEmpty {
+            try await loadCollectionURLs()
         }
         
-        defer { currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount)) }
+        return await processNextBatch()
+    }
+    
+    private func loadCollectionURLs() async throws {
+        let (receivedURLs, nextPageToken) = try await loader.loadCollectionURLs(nextPageToken: nextPageToken)
+        self.currentBatchURLs = receivedURLs
+        self.nextPageToken = nextPageToken
+    }
+
+    private func processNextBatch() async -> [Piece] {
+        let firstBatchURLs = Array(currentBatchURLs.prefix(batchCount))
         
-        return await loadPieces(for: Array(urls))
+        defer {
+            currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount))
+        }
+    
+        return await loadPieces(for: firstBatchURLs)
     }
     
     private func loadPieces(for urls: [URL]) async -> [Piece] {

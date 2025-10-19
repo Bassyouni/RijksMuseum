@@ -25,7 +25,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
             XCTAssertEqual(error as NSError, anyError)
         }
     }
-
+    
     func test_loadInitialPieces_loadsFirstTenPiecesWithCorrectURLs() async {
         let sut = makeSUT()
         let first10PiecesURLs = makePieces(count: batchCount).map { URL(string: $0.id)! }
@@ -36,7 +36,19 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         
         XCTAssertEqual(env.loader.loadPieceDetailURLs, first10PiecesURLs)
     }
+    
+    func test_loadInitialPieces_deliversPiecesOnLoaderSuccess() async throws {
+        let sut = makeSUT()
+        let first10Pieces = makePieces(count: batchCount)
+        let extraPieces = makePieces(count: 1)
+        env.loader.stubbedLoadMuseumPieceDetailResults = (first10Pieces + extraPieces).map { .success($0) }
+        env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: batchCount + 1), nil))
         
+        let receivedPieces = try await sut.loadInitialPieces()
+        
+        XCTAssertEqual(receivedPieces, first10Pieces.mapToPieces())
+    }
+    
 }
 
 private extension RemoteMuseumPiecesPaginatorTests {
@@ -51,8 +63,14 @@ private extension RemoteMuseumPiecesPaginatorTests {
     }
     
     func makePieces(count: Int) -> [LocalizedPiece] {
-        return (1...10).map {
+        return (1...count).map {
             LocalizedPiece(id: "\($0)", title: nil, date: nil, creator: nil, imageURL: nil)
+        }
+    }
+    
+    func makeURLs(count: Int) -> [URL] {
+        return (1...count).map { _ in
+            uniqueURL()
         }
     }
 }
@@ -76,5 +94,19 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
         guard !stubbedLoadMuseumPieceDetailResults.isEmpty else { throw anyError }
         
         return try stubbedLoadMuseumPieceDetailResults.removeFirst().get()
+    }
+}
+
+private extension Array where Element == LocalizedPiece {
+    func mapToPieces() -> [MuseumPiece] {
+        self.map {
+            MuseumPiece(
+                id: $0.id,
+                title: $0.title?.firstValue,
+                date: $0.date?.firstValue,
+                creator: $0.creator?.firstValue,
+                image: ResizableImage(url: $0.imageURL)
+            )
+        }
     }
 }

@@ -33,6 +33,20 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(sut.viewState, .error("Something went wrong"))
     }
     
+    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
+        let sut = makeSUT()
+        let pieces = [makePiece(), makePiece()]
+        env.paginator.needToControlState = true
+        
+        async let loadData: () = sut.loadData()
+        await env.paginator.waitForLoadInitalPiecesToStart()
+        XCTAssertEqual(sut.viewState, .loading)
+        
+        env.paginator.completeWith(pieces)
+        await loadData
+        XCTAssertEqual(sut.viewState, .loaded(pieces))
+    }
+    
 }
 
 private extension PiecesListViewModelTests {
@@ -44,6 +58,16 @@ private extension PiecesListViewModelTests {
         let sut = PiecesListViewModel(paginator: env.paginator)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
+    }
+    
+    private func makePiece() -> Piece {
+        Piece(
+            id: UUID().uuidString,
+            title: nil,
+            date: nil,
+            creator: nil,
+            image: nil
+        )
     }
 }
 

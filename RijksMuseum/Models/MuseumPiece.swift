@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MuseumPiece: Equatable, Identifiable {
+struct MuseumPiece: Equatable, Identifiable, Hashable {
     let id: String
     let title: String?
     let date: String?
@@ -15,7 +15,7 @@ struct MuseumPiece: Equatable, Identifiable {
     let image: ResizableImage?
 }
 
-struct ResizableImage: Equatable {
+struct ResizableImage: Equatable, Hashable {
     private let url: URL?
 
     init(url: URL?) {

@@ -9,6 +9,7 @@ import Foundation
 
 final class RemoteMuseumPiecesPaginator {
     private let loader: MuseumPiecesLoader
+    private let batchCount = 10
     
     init(loader: MuseumPiecesLoader) {
         self.loader = loader
@@ -16,8 +17,8 @@ final class RemoteMuseumPiecesPaginator {
     
     func loadInitialPieces() async throws -> [MuseumPiece] {
         let (urls, _) = try await loader.loadCollectionURLs(nextPageToken: nil)
+        let count = min(urls.count, batchCount)
         
-        let count = min(urls.count, 10)
         for index in 0..<count {
             _ = try await loader.loadMuseumPieceDetail(url: urls[index])
         }

@@ -15,6 +15,7 @@ final class PieceCollectionViewCell: UICollectionViewCell {
     private let creatorLabel = UILabel()
     private let dateLabel = UILabel()
     private let shimmerView = UIView()
+    private let imageHeight: CGFloat = 300
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,7 +44,6 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-//        imageView.backgroundColor = .systemGray2
         
         titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
@@ -79,30 +79,30 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         shimmerView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            contentView.widthAnchor.constraint(equalToConstant: 180),
+            contentView.widthAnchor.constraint(equalToConstant: currentScreenWidth),
             
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageView.heightAnchor.constraint(equalToConstant: 250),
+            imageView.heightAnchor.constraint(equalToConstant: imageHeight),
             
             shimmerView.topAnchor.constraint(equalTo: imageView.topAnchor),
             shimmerView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
             shimmerView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
             shimmerView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor),
 
-            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            creatorLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            creatorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            creatorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            creatorLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            creatorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            creatorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            dateLabel.topAnchor.constraint(equalTo: creatorLabel.bottomAnchor, constant: 2),
-            dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            dateLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8)
+            dateLabel.topAnchor.constraint(equalTo: creatorLabel.bottomAnchor, constant: 4),
+            dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            dateLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16)
         ])
     }
     
@@ -113,9 +113,10 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         
         let imageURL = imageResizer.newImageURL(
             from: piece.imageURL,
-            width: Int(UIScreen.main.bounds.width),
-            height: 250
+            width: Int(currentScreenWidth),
+            height: Int(imageHeight)
         )
+        
         loadImage(from: imageURL)
     }
     
@@ -141,5 +142,9 @@ final class PieceCollectionViewCell: UICollectionViewCell {
     
     private func hideShimmer() {
         shimmerView.isHidden = true
+    }
+    
+    private var currentScreenWidth: CGFloat {
+        UIWindow.current?.bounds.width ?? 300
     }
 }

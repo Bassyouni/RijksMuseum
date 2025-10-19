@@ -26,6 +26,9 @@ final class RemoteMuseumPiecesPaginator {
     }
     
     func loadInitialPieces() async throws(PaginationError) -> [Piece] {
+        nextPageToken = nil
+        currentBatchURLs = []
+        
         try await loadCollectionURLs()
         return await processNextBatch()
     }

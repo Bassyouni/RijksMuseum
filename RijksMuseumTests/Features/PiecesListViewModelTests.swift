@@ -62,14 +62,7 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
             return try stubbedLoadInitliaPieces.get()
         }
         
-        do {
-            return try await withCheckedThrowingContinuation { continuation in
-               self.continuation = continuation
-            }
-        }
-        catch {
-            throw error as! PaginationError
-        }
+        return try await returnContinuation()
     }
     
     func loadMorePieces() async throws(PaginationError) -> [Piece] {
@@ -79,14 +72,16 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
             return try stubbedLoadInitliaPieces.get()
         }
         
+        return try await returnContinuation()
+    }
+    
+    private func returnContinuation() async throws(PaginationError) -> [Piece]   {
         do {
             return try await withCheckedThrowingContinuation { continuation in
-               self.continuation = continuation
+                self.continuation = continuation
             }
         }
-        catch {
-            throw error as! PaginationError
-        }
+        catch { throw error as! PaginationError }
     }
     
     func waitForLoadInitalPiecesToStart() async {

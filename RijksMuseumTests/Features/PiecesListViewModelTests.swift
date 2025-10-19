@@ -12,6 +12,7 @@ import XCTest
 final class PiecesListViewModelTests: XCTestCase {
     private let env = Environment()
     
+    // MARK: - loadData
     func test_loadData_requestsInitialPiecesFromPaginator() async throws {
         let sut = makeSUT()
         env.paginator.stubbedResult = .success([])
@@ -21,7 +22,7 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(env.paginator.loadInitialPiecesCallCount, 1)
     }
     
-    func test_loadData_whenPaginatorFails_showsError() async throws {
+    func test_loadData_whenPaginatorFails_viewStateIsError() async throws {
         let sut = makeSUT()
         
         async let loadData: () = sut.loadData()
@@ -33,7 +34,11 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(sut.viewState, .error("Something went wrong"))
     }
     
-    fileprivate func extractedFunc(_ sut: PiecesListViewModel, _ pieces: [Piece], _ loadData: ()) async {
+    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
+        let sut = makeSUT()
+        let pieces = [makePiece(), makePiece()]
+        
+        async let loadData: () = sut.loadData()
         await env.paginator.waitForLoadInitalPiecesToStart()
         XCTAssertEqual(sut.viewState, .loading)
         
@@ -41,15 +46,6 @@ final class PiecesListViewModelTests: XCTestCase {
         await loadData
         XCTAssertEqual(sut.viewState, .loaded(pieces))
     }
-    
-    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
-        let sut = makeSUT()
-        let pieces = [makePiece(), makePiece()]
-        
-        async let loadData: () = sut.loadData()
-        await extractedFunc(sut, pieces, loadData)
-    }
-    
 }
 
 private extension PiecesListViewModelTests {
@@ -63,7 +59,7 @@ private extension PiecesListViewModelTests {
         return sut
     }
     
-    private func makePiece() -> Piece {
+    func makePiece() -> Piece {
         Piece(
             id: UUID().uuidString,
             title: nil,
@@ -112,6 +108,12 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
     
     func waitForLoadInitalPiecesToStart() async {
         while loadInitialPiecesCallCount == 0 {
+            await Task.yield()
+        }
+    }
+    
+    func waitForLoadMorePiecesToStart() async {
+        while loadMorePiecesCallCount == 0 {
             await Task.yield()
         }
     }

@@ -20,6 +20,7 @@ final class PiecesListViewModel {
     
     private let paginator: MuseumPiecesPaginator
     private(set) var viewState: ViewState = .idle
+    private(set) var isLoadingMore = false
     
     init(paginator: MuseumPiecesPaginator) {
         self.paginator = paginator
@@ -36,6 +37,9 @@ final class PiecesListViewModel {
     }
     
     func loadMore() async {
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+        
         _ = try? await paginator.loadMorePieces()
     }
 }

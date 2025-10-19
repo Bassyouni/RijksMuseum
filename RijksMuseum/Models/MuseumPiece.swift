@@ -9,7 +9,7 @@ import Foundation
 
 struct MuseumPiece: Equatable, Identifiable {
     let id: String
-    let title: String
+    let title: String?
     let date: String?
     let creator: String?
     let image: ResizableImage?

@@ -18,11 +18,19 @@ final class RemoteMuseumPiecesPaginator {
     func loadInitialPieces() async throws -> [MuseumPiece] {
         let (urls, _) = try await loader.loadCollectionURLs(nextPageToken: nil)
         let count = min(urls.count, batchCount)
+        var models = [MuseumPiece]()
         
         for index in 0..<count {
-            _ = try await loader.loadMuseumPieceDetail(url: urls[index])
+            let model = try await loader.loadMuseumPieceDetail(url: urls[index])
+            models.append(MuseumPiece(
+                id: model.id,
+                title: nil,
+                date: nil,
+                creator: nil,
+                image: .init(url: model.imageURL)
+            ))
         }
         
-        return []
+        return models
     }
 }

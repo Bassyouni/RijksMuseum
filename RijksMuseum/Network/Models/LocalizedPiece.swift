@@ -12,6 +12,10 @@ struct Localized<T: Equatable>: Equatable {
     init(_ values: [Language: T]) {
         self.values = values
     }
+    
+    var firstValue: T? {
+        values.values.first
+    }
 }
 
 struct LocalizedPiece: Equatable {

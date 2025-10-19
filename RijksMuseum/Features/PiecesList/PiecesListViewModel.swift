@@ -21,6 +21,7 @@ final class PiecesListViewModel {
     private let paginator: MuseumPiecesPaginator
     private(set) var viewState: ViewState = .idle
     private(set) var isLoadingMore = false
+    private var hasMorePieces: Bool = true
     
     init(paginator: MuseumPiecesPaginator) {
         self.paginator = paginator
@@ -37,11 +38,18 @@ final class PiecesListViewModel {
     }
     
     func loadMore() async {
-        guard case .loaded(let currentPieces) = viewState else { return }
+        guard case .loaded(let currentPieces) = viewState, hasMorePieces else { return }
         isLoadingMore = true
         defer { isLoadingMore = false }
         
-        let newPieces = try? await paginator.loadMorePieces()
-        viewState = .loaded(currentPieces + (newPieces ?? []))
+        do {
+            let newPieces = try await paginator.loadMorePieces()
+            viewState = .loaded(currentPieces + newPieces)
+        } catch PaginationError.noMorePieces {
+            hasMorePieces = false
+        } catch {
+            
+        }
+        
     }
 }

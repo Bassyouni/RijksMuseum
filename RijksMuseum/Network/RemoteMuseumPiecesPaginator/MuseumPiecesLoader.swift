@@ -9,5 +9,5 @@ import Foundation
 
 protocol MuseumPiecesLoader {
     func loadCollectionURLs(nextPageToken: String?) async throws -> (urls: [URL], nextPageToken: String?)
-    func loadMuseumPieceDetail(url: URL) async throws -> LocalizedPiece
+    func loadPieceDetail(url: URL) async throws -> LocalizedPiece
 }

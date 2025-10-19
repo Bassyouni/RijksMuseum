@@ -38,7 +38,7 @@ final class RemoteMuseumPiecesLoader: MuseumPiecesLoader {
     }
     
     @concurrent
-    func loadMuseumPieceDetail(url: URL) async throws(Error) -> LocalizedPiece {
+    func loadPieceDetail(url: URL) async throws(Error) -> LocalizedPiece {
         guard let data = try? await httpClient.get(url: url) else {
             throw .networkError
         }

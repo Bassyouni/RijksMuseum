@@ -30,7 +30,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         let sut = makeSUT()
         let first10PiecesURLs = makePieces(count: batchCount).map { URL(string: $0.id)! }
         env.loader.stubbedLoadCollectionURLsResult = .success((first10PiecesURLs + [uniqueURL()], nil))
-        env.loader.stubbedLoadMuseumPieceDetailResults = (makePieces(count: batchCount)).map { .success($0) }
+        env.loader.stubbedLoadPieceDetailResults = (makePieces(count: batchCount)).map { .success($0) }
         
         _ = try? await sut.loadInitialPieces()
         
@@ -41,7 +41,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         let sut = makeSUT()
         let first10Pieces = makePieces(count: batchCount)
         let extraPieces = makePieces(count: 1)
-        env.loader.stubbedLoadMuseumPieceDetailResults = (first10Pieces + extraPieces).map { .success($0) }
+        env.loader.stubbedLoadPieceDetailResults = (first10Pieces + extraPieces).map { .success($0) }
         env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: batchCount + 1), nil))
         
         let receivedPieces = try await sut.loadInitialPieces()
@@ -52,7 +52,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
     func test_loadInitialPieces_onLoadingPieceDetailsFailure_skipsModel() async throws {
         let sut = makeSUT()
         let succesPiece = makePieces(count: 1).first!
-        env.loader.stubbedLoadMuseumPieceDetailResults = [.fail(), .success(succesPiece)]
+        env.loader.stubbedLoadPieceDetailResults = [.fail(), .success(succesPiece)]
         env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: 2), nil))
         
         let receivedPieces = try await sut.loadInitialPieces()
@@ -90,9 +90,9 @@ private extension RemoteMuseumPiecesPaginatorTests {
         }
     }
     
-    func mapToPieces(_ models: [LocalizedPiece]) -> Set<MuseumPiece> {
+    func mapToPieces(_ models: [LocalizedPiece]) -> Set<Piece> {
         Set(models.map {
-            MuseumPiece(
+            Piece(
                 id: $0.id,
                 title: env.policy.resolve(from: $0.title?.values ?? [:]),
                 date: env.policy.resolve(from: $0.date?.values ?? [:]),
@@ -114,7 +114,7 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
     private(set) var loadPieceDetailURLs: [URL] = []
     
     var stubbedLoadCollectionURLsResult: Result<(urls: [URL], nextPageToken: String?), Error> = .fail()
-    var stubbedLoadMuseumPieceDetailResults = [Result<LocalizedPiece, Error>]()
+    var stubbedLoadPieceDetailResults = [Result<LocalizedPiece, Error>]()
     
     func loadCollectionURLs(nextPageToken: String?) async throws -> (urls: [URL], nextPageToken: String?) {
         loadCollectionURLs.append(nextPageToken)
@@ -122,11 +122,11 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
         return try stubbedLoadCollectionURLsResult.get()
     }
     
-    func loadMuseumPieceDetail(url: URL) async throws -> LocalizedPiece {
+    func loadPieceDetail(url: URL) async throws -> LocalizedPiece {
         loadPieceDetailURLs.append(url)
         
-        guard !stubbedLoadMuseumPieceDetailResults.isEmpty else { throw anyError }
+        guard !stubbedLoadPieceDetailResults.isEmpty else { throw anyError }
         
-        return try stubbedLoadMuseumPieceDetailResults.removeFirst().get()
+        return try stubbedLoadPieceDetailResults.removeFirst().get()
     }
 }

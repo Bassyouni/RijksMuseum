@@ -18,7 +18,7 @@ final class RemoteMuseumPiecesPaginator {
         self.languagePolicy = languagePolicy
     }
     
-    func loadInitialPieces() async throws -> [MuseumPiece] {
+    func loadInitialPieces() async throws -> [Piece] {
         let (urls, _) = try await loader.loadCollectionURLs(nextPageToken: nil)
         
         let firstBatchURLs = Array(urls.prefix(batchCount))
@@ -26,15 +26,15 @@ final class RemoteMuseumPiecesPaginator {
         return await loadPieces(for: firstBatchURLs)
     }
     
-    private func loadPieces(for urls: [URL]) async -> [MuseumPiece] {
+    private func loadPieces(for urls: [URL]) async -> [Piece] {
         return await withTaskGroup { [weak self] group in
             for url in urls {
                 group.addTask { [weak self] in
-                    return try? await self?.loader.loadMuseumPieceDetail(url: url)
+                    return try? await self?.loader.loadPieceDetail(url: url)
                 }
             }
             
-            var results: [MuseumPiece] = []
+            var results: [Piece] = []
             for await localizedPiece in group {
                 if let localizedPiece = localizedPiece {
                     results.append(localizedPiece.mapToPiece(using: self?.languagePolicy))
@@ -46,8 +46,8 @@ final class RemoteMuseumPiecesPaginator {
 }
 
 private extension LocalizedPiece {
-    func mapToPiece(using policy: LanguageResolutionPolicy?) -> MuseumPiece {
-        MuseumPiece(
+    func mapToPiece(using policy: LanguageResolutionPolicy?) -> Piece {
+        Piece(
             id: id,
             title: policy?.resolve(from: title?.values ?? [:]),
             date: policy?.resolve(from: date?.values ?? [:]),

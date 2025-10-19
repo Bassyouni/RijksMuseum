@@ -1,5 +1,5 @@
 //
-//  MuseumPiece.swift
+//  Piece.swift
 //  RijksMuseum
 //
 //  Created by Dionne Hallegraeff on 17/10/2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MuseumPiece: Equatable, Identifiable, Hashable {
+struct Piece: Equatable, Identifiable, Hashable {
     let id: String
     let title: String?
     let date: String?

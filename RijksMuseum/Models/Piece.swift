@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Piece: Equatable, Identifiable, Hashable {
+struct Piece: Equatable, Identifiable, Hashable, Sendable {
     let id: String
     let title: String?
     let date: String?

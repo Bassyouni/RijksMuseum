@@ -30,7 +30,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         let sut = makeSUT()
         let first10PiecesURLs = makePieces(count: batchCount).map { URL(string: $0.id)! }
         env.loader.stubbedLoadCollectionURLsResult = .success((first10PiecesURLs + [uniqueURL()], nil))
-        env.loader.stubbedLoadPieceDetailResults = (makePieces(count: batchCount)).map { .success($0) }
+        env.loader.stubbedLoadPieceDetailResults = makePieces(count: batchCount).map { .success($0) }
         
         _ = try? await sut.loadInitialPieces()
         
@@ -64,7 +64,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         let sut = makeSUT()
         let piecesURLs = makePieces(count: batchCount * 2).map { URL(string: $0.id)! }
         env.loader.stubbedLoadCollectionURLsResult = .success((piecesURLs, nil))
-        env.loader.stubbedLoadPieceDetailResults = (makePieces(count: batchCount*2)).map { .success($0) }
+        env.loader.stubbedLoadPieceDetailResults = makePieces(count: batchCount*2).map { .success($0) }
         _ = try? await sut.loadInitialPieces()
         
         XCTAssertEqual(Set(env.loader.loadPieceDetailURLs), Set(piecesURLs.prefix(batchCount)))
@@ -72,6 +72,19 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         _ = try? await sut.loadMorePieces()
         
         XCTAssertEqual(Set(env.loader.loadPieceDetailURLs), Set(piecesURLs))
+
+    }
+    
+    func test_loadMorePieces_whenThereIsNoURLsLeft_fetchesNextCollectionWithCorrectPageToken() async throws {
+        let sut = makeSUT()
+        let nextPageToken = "any"
+        env.loader.stubbedLoadCollectionURLsResult = .success(([uniqueURL()], nextPageToken))
+        env.loader.stubbedLoadPieceDetailResults = makePieces(count: 1).map { .success($0) }
+        _ = try? await sut.loadInitialPieces()
+
+        _ = try? await sut.loadMorePieces()
+        
+        XCTAssertEqual(env.loader.loadCollectionPageTokens, [nil, nextPageToken])
 
     }
 }
@@ -125,14 +138,14 @@ private extension RemoteMuseumPiecesPaginatorTests {
 }
 
 private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
-    private(set) var loadCollectionURLs: [String?] = []
+    private(set) var loadCollectionPageTokens: [String?] = []
     private(set) var loadPieceDetailURLs: [URL] = []
     
     var stubbedLoadCollectionURLsResult: Result<(urls: [URL], nextPageToken: String?), Error> = .fail()
     var stubbedLoadPieceDetailResults = [Result<LocalizedPiece, Error>]()
     
     func loadCollectionURLs(nextPageToken: String?) async throws -> (urls: [URL], nextPageToken: String?) {
-        loadCollectionURLs.append(nextPageToken)
+        loadCollectionPageTokens.append(nextPageToken)
         
         return try stubbedLoadCollectionURLsResult.get()
     }

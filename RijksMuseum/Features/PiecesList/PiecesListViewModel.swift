@@ -45,11 +45,9 @@ final class PiecesListViewModel {
         do {
             let newPieces = try await paginator.loadMorePieces()
             viewState = .loaded(currentPieces + newPieces)
-        } catch PaginationError.noMorePieces {
-            hasMorePieces = false
         } catch {
-            
+            guard case .noMorePieces = error else { return }
+            hasMorePieces = false
         }
-        
     }
 }

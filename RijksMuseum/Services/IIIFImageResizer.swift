@@ -1,5 +1,5 @@
 //
-//  ResizableImageURL.swift
+//  IIIFImageResizer.swift
 //  RijksMuseum
 //
 //  Created by Omar Bassyouni on 19/10/2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ResizableImageURL: Equatable, Hashable {
+struct IIIFImageResizer: Equatable, Hashable {
     private let url: URL?
 
     init(url: URL?) {

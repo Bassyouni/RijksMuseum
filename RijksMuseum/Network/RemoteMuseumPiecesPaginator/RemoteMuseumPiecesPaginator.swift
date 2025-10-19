@@ -87,7 +87,7 @@ private extension LocalizedPiece {
             title: policy?.resolve(from: title?.values ?? [:]),
             date: policy?.resolve(from: date?.values ?? [:]),
             creator: policy?.resolve(from: creator?.values ?? [:]),
-            imageURL: .init(url: imageURL)
+            imageURL: imageURL
         )
     }
 }

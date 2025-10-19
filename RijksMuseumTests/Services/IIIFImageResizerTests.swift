@@ -1,5 +1,5 @@
 //
-//  ResizableImageURLTests.swift
+//  IIIFImageResizerTests.swift
 //  RijksMuseum
 //
 //  Created by Omar Bassyouni on 19/10/2025.
@@ -9,7 +9,7 @@ import XCTest
 @testable import RijksMuseum
 
 @MainActor
-final class ResizableImageURLTests: XCTestCase {
+final class IIIFImageResizerTests: XCTestCase {
     func test_imageURL_replacesMaxKeywordWithSize() {
         let url = "https://iiif.micr.io/qcYVp/full/max/0/default.jpg"
         let sut = makeSUT(url: url)
@@ -21,8 +21,8 @@ final class ResizableImageURLTests: XCTestCase {
     }
 }
 
-private extension ResizableImageURLTests {
-    func makeSUT(url: String? = nil, file: StaticString = #file, line: UInt = #line) -> ResizableImageURL {
-        return ResizableImageURL(url: URL(string: url ?? ""))
+private extension IIIFImageResizerTests {
+    func makeSUT(url: String? = nil, file: StaticString = #file, line: UInt = #line) -> IIIFImageResizer {
+        return IIIFImageResizer(url: URL(string: url ?? ""))
     }
 }

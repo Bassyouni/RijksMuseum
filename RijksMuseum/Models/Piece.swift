@@ -12,5 +12,5 @@ struct Piece: Equatable, Identifiable, Hashable {
     let title: String?
     let date: String?
     let creator: String?
-    let imageURL: ResizableImageURL?
+    let imageURL: URL?
 }

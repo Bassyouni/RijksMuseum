@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum ViewState: Equatable {
-    case idle
-    case loading
-    case loaded([Piece])
-    case error(String)
-}
-
 @Observable
 @MainActor
 final class PiecesListViewModel {

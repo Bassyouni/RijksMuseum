@@ -12,7 +12,7 @@ import XCTest
 final class PiecesListViewModelTests: XCTestCase {
     private let env = Environment()
     
-    func test_loadData_whenCalled_thenFetchData() async throws {
+    func test_loadData_requestsInitialPiecesFromPaginator() async throws {
         let sut = makeSUT()
         
         await sut.loadData()
@@ -20,6 +20,18 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(env.paginator.loadInitialPiecesCallCount, 1)
     }
     
+    func test_loadData_whenPaginatorFails_showsError() async throws {
+        let sut = makeSUT()
+        env.paginator.needToControlState = true
+        
+        async let loadData: () = sut.loadData()
+        await env.paginator.waitForLoadInitalPiecesToStart()
+        XCTAssertEqual(sut.viewState, .loading)
+        
+        env.paginator.completeWith(.unknownError)
+        await loadData
+        XCTAssertEqual(sut.viewState, .error("Something went wrong"))
+    }
     
 }
 
@@ -33,20 +45,61 @@ private extension PiecesListViewModelTests {
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
-    
 }
 
 final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
     private(set) var loadInitialPiecesCallCount: Int = 0
     private(set) var loadMorePiecesCallCount: Int = 0
     
+    var needToControlState: Bool = false
+    private var continuation: CheckedContinuation<[Piece], Error>?
+    private var stubbedLoadInitliaPieces: Result<[Piece], PaginationError> = .success([])
+    
     func loadInitialPieces() async throws(PaginationError) -> [Piece] {
         loadInitialPiecesCallCount += 1
-        return []
+        
+        guard needToControlState else {
+            return try stubbedLoadInitliaPieces.get()
+        }
+        
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+               self.continuation = continuation
+            }
+        }
+        catch {
+            throw error as! PaginationError
+        }
     }
     
     func loadMorePieces() async throws(PaginationError) -> [Piece] {
         loadMorePiecesCallCount += 1
-        return []
+        
+        guard needToControlState else {
+            return try stubbedLoadInitliaPieces.get()
+        }
+        
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+               self.continuation = continuation
+            }
+        }
+        catch {
+            throw error as! PaginationError
+        }
+    }
+    
+    func waitForLoadInitalPiecesToStart() async {
+        while loadInitialPiecesCallCount == 0 {
+            await Task.yield()
+        }
+    }
+    
+    func completeWith(_ value: [Piece]) {
+        continuation?.resume(returning: value)
+    }
+    
+    func completeWith(_ error: PaginationError) {
+        continuation?.resume(throwing: error)
     }
 }

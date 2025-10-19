@@ -8,6 +8,7 @@
 import Foundation
 
 enum ViewState: Equatable {
+    case idle
     case loading
     case loaded([Piece])
     case error(String)
@@ -16,13 +17,20 @@ enum ViewState: Equatable {
 @Observable
 @MainActor
 final class PiecesListViewModel {
+    
     private let paginator: MuseumPiecesPaginator
+    private(set) var viewState: ViewState = .idle
     
     init(paginator: MuseumPiecesPaginator) {
         self.paginator = paginator
     }
     
     func loadData() async {
-        _ = try? await paginator.loadInitialPieces()
+        viewState = .loading
+        do {
+            _ = try await paginator.loadInitialPieces()
+        } catch {
+            viewState = .error("Something went wrong")
+        }
     }
 }

@@ -46,6 +46,18 @@ final class PiecesListViewModelTests: XCTestCase {
         await loadData
         XCTAssertEqual(sut.viewState, .loaded(pieces))
     }
+    
+    // MARK: - loadMore
+    func test_loadMore_requestsMorePiecesFromPaginator() async {
+        let sut = makeSUT()
+        env.paginator.stubbedResult = .success([makePiece()])
+        await sut.loadData()
+        
+        env.paginator.stubbedResult = .success([])
+        await sut.loadMore()
+        
+        XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 1)
+    }
 }
 
 private extension PiecesListViewModelTests {

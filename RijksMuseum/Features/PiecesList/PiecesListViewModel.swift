@@ -34,4 +34,8 @@ final class PiecesListViewModel {
             viewState = .error("Something went wrong")
         }
     }
+    
+    func loadMore() async {
+        _ = try? await paginator.loadMorePieces()
+    }
 }

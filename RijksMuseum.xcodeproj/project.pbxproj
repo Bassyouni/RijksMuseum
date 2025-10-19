@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B89EFDF02EA5780B0014BDB0 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = B89EFDEF2EA5780B0014BDB0 /* Kingfisher */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		8ACBEB3F2EA1854C0068C299 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B89EFDF02EA5780B0014BDB0 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +108,7 @@
 			);
 			name = RijksMuseum;
 			packageProductDependencies = (
+				B89EFDEF2EA5780B0014BDB0 /* Kingfisher */,
 			);
 			productName = RijksMuseum;
 			productReference = 8ACBEB282EA1854B0068C299 /* RijksMuseum.app */;
@@ -159,6 +165,9 @@
 			);
 			mainGroup = 8ACBEB1F2EA1854B0068C299;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B89EFDEE2EA5780B0014BDB0 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8ACBEB292EA1854B0068C299 /* Products */;
 			projectDirPath = "";
@@ -485,6 +494,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B89EFDEE2EA5780B0014BDB0 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B89EFDEF2EA5780B0014BDB0 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B89EFDEE2EA5780B0014BDB0 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8ACBEB202EA1854B0068C299 /* Project object */;
 }

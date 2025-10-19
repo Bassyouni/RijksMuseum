@@ -49,6 +49,17 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         XCTAssertEqual(receivedPieces, first10Pieces.mapToPieces())
     }
     
+    func test_loadInitialPieces_onLoadingPieceDetailsFailure_skipsModel() async throws {
+        let sut = makeSUT()
+        let succesPiece = makePieces(count: 1).first!
+        env.loader.stubbedLoadMuseumPieceDetailResults = [.fail(), .success(succesPiece)]
+        env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: 2), nil))
+        
+        let receivedPieces = try await sut.loadInitialPieces()
+        
+        XCTAssertEqual(receivedPieces, [succesPiece].mapToPieces())
+    }
+    
 }
 
 private extension RemoteMuseumPiecesPaginatorTests {

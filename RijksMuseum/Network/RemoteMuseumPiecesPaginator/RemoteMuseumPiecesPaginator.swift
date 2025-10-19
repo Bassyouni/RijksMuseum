@@ -21,14 +21,15 @@ final class RemoteMuseumPiecesPaginator {
         var models = [MuseumPiece]()
         
         for index in 0..<count {
-            let model = try await loader.loadMuseumPieceDetail(url: urls[index])
-            models.append(MuseumPiece(
-                id: model.id,
-                title: nil,
-                date: nil,
-                creator: nil,
-                image: .init(url: model.imageURL)
-            ))
+            if let model = try? await loader.loadMuseumPieceDetail(url: urls[index]) {
+                models.append(MuseumPiece(
+                    id: model.id,
+                    title: nil,
+                    date: nil,
+                    creator: nil,
+                    image: .init(url: model.imageURL)
+                ))
+            }
         }
         
         return models

@@ -64,7 +64,7 @@ struct PieceDetailsMapper {
             .compactMap { item -> (Language, String)? in
                 guard let content = item.content, !content.isEmpty else { return nil }
 
-                return (item.detectedLanguage.languge, content)
+                return (item.detectedLanguage.language, content)
             }
 
         let dict = Dictionary(mappedItems ?? [], uniquingKeysWith: { first, _ in first })
@@ -147,7 +147,7 @@ private extension PieceDetailsMapper {
             return LanguageDTO(rawValue: code) ?? .other
         }
         
-        var languge: Language {
+        var language: Language {
             switch self {
             case .dutch: return .dutch
             case .english: return .english

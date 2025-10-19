@@ -23,7 +23,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         XCTAssertEqual(env.client.requestedURLs, [url])
     }
     
-    func test_fetchCollectionURLs_whePassingNextPageToken_appendsItToURL() async {
+    func test_fetchCollectionURLs_whenPassingNextPageToken_appendsItToURL() async {
         let urlString = "www.a-url.com"
         let pageToken = "any-token"
         let sut = makeSUT(url: URL(string: urlString)!)
@@ -177,7 +177,7 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
         XCTAssertEqual(env.client.requestedURLs, [pieceDetailURL, visualItemURL, digitalObjectURL])
     }
 
-    func test_fetchMuseumPieceDetail_deliversIIIFImageUROnValidResponse() async throws {
+    func test_fetchMuseumPieceDetail_deliversIIIFImageURLOnValidResponse() async throws {
         let sut = makeSUT()
         let iiifImageURL = uniqueURL()
         let digitalObjectJSON = makeDigitalObjectJSON(iiifURL: iiifImageURL)

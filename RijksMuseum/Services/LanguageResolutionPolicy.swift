@@ -9,11 +9,11 @@ import Foundation
 
 struct LanguageResolutionPolicy {
     
-    private let prefferdLanguages = [Language.dutch, .english, .unknown]
+    private let preferredLanguages = [Language.dutch, .english, .unknown]
     
     func resolve<T>(from languages: [Language: T]) -> T? {
-        for preferredLang in prefferdLanguages {
-            if let value = languages[preferredLang] {
+        for preferredLanguage in preferredLanguages {
+            if let value = languages[preferredLanguage] {
                 return value
             }
         }

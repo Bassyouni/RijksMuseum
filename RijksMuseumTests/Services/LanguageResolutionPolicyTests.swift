@@ -14,7 +14,7 @@ final class LanguageResolutionPolicyTests: XCTestCase {
     private let english = UUID().uuidString
     private let unknown = UUID().uuidString
     
-    func test_resolve_picksDutchAsThePreferdLanguage() {
+    func test_resolve_picksDutchAsThePreferredLanguage() {
         let sut = makeSUT()
         
         let received = sut.resolve(from: [.unknown: unknown, .dutch: dutch, .english: english])
@@ -30,7 +30,7 @@ final class LanguageResolutionPolicyTests: XCTestCase {
         XCTAssertEqual(received, english)
     }
     
-    func test_resolve_whenNeitherThePreffedOrTheFallBackExists_picksUnknown() {
+    func test_resolve_whenNeitherThePreferredOrTheFallBackExists_picksUnknown() {
         let sut = makeSUT()
         
         let received = sut.resolve(from: [.unknown: unknown])

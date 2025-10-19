@@ -46,7 +46,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         
         let receivedPieces = try await sut.loadInitialPieces()
         
-        XCTAssertEqual(Set(receivedPieces), Set(first10Pieces.mapToPieces()))
+        XCTAssertEqual(Set(receivedPieces), mapToPieces(first10Pieces))
     }
     
     func test_loadInitialPieces_onLoadingPieceDetailsFailure_skipsModel() async throws {
@@ -57,26 +57,49 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         
         let receivedPieces = try await sut.loadInitialPieces()
         
-        XCTAssertEqual(Set(receivedPieces), Set([succesPiece].mapToPieces()))
+        XCTAssertEqual(Set(receivedPieces), mapToPieces([succesPiece]))
     }
-    
 }
 
 private extension RemoteMuseumPiecesPaginatorTests {
+    @MainActor
     struct Environment {
         let loader = MuseumPiecesLoaderSpy()
+        let policy = LanguageResolutionPolicy()
     }
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesPaginator {
-        let sut = RemoteMuseumPiecesPaginator(loader: env.loader)
+        let sut = RemoteMuseumPiecesPaginator(loader: env.loader, languagePolicy: env.policy)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
+    }
+
+    func givenLoadCollectionURLsIsStubbbed() {
+        env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: batchCount + 1), nil))
     }
     
     func makePieces(count: Int) -> [LocalizedPiece] {
         return (1...count).map {
-            LocalizedPiece(id: "\($0)", title: nil, date: nil, creator: nil, imageURL: nil)
+            LocalizedPiece(
+                id: "\($0)",
+                title: .init([.english: "title \($0)"]),
+                date: .init([.dutch: "date \($0)"]),
+                creator: .init([.dutch: " dutch creator \($0)", .english: "english creator \($0)"]),
+                imageURL: nil
+            )
         }
+    }
+    
+    func mapToPieces(_ models: [LocalizedPiece]) -> Set<MuseumPiece> {
+        Set(models.map {
+            MuseumPiece(
+                id: $0.id,
+                title: env.policy.resolve(from: $0.title?.values ?? [:]),
+                date: env.policy.resolve(from: $0.date?.values ?? [:]),
+                creator: env.policy.resolve(from: $0.creator?.values ?? [:]),
+                image: ResizableImage(url: $0.imageURL)
+            )
+        })
     }
     
     func makeURLs(count: Int) -> [URL] {
@@ -105,19 +128,5 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
         guard !stubbedLoadMuseumPieceDetailResults.isEmpty else { throw anyError }
         
         return try stubbedLoadMuseumPieceDetailResults.removeFirst().get()
-    }
-}
-
-extension Array where Element == LocalizedPiece {
-    func mapToPieces() -> [MuseumPiece] {
-        self.map {
-            MuseumPiece(
-                id: $0.id,
-                title: $0.title?.firstValue,
-                date: $0.date?.firstValue,
-                creator: $0.creator?.firstValue,
-                image: ResizableImage(url: $0.imageURL)
-            )
-        }
     }
 }

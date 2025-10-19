@@ -8,11 +8,14 @@
 import Foundation
 
 final class RemoteMuseumPiecesPaginator {
-    private let loader: MuseumPiecesLoader
-    private let batchCount = 10
     
-    init(loader: MuseumPiecesLoader) {
+    private let batchCount = 10
+    private let loader: MuseumPiecesLoader
+    private let languagePolicy: LanguageResolutionPolicy
+    
+    init(loader: MuseumPiecesLoader, languagePolicy: LanguageResolutionPolicy) {
         self.loader = loader
+        self.languagePolicy = languagePolicy
     }
     
     func loadInitialPieces() async throws -> [MuseumPiece] {
@@ -34,7 +37,7 @@ final class RemoteMuseumPiecesPaginator {
             var results: [MuseumPiece] = []
             for await localizedPiece in group {
                 if let localizedPiece = localizedPiece {
-                    results.append(localizedPiece.mapToPiece())
+                    results.append(localizedPiece.mapToPiece(using: self?.languagePolicy))
                 }
             }
             return results
@@ -43,13 +46,13 @@ final class RemoteMuseumPiecesPaginator {
 }
 
 private extension LocalizedPiece {
-    func mapToPiece() -> MuseumPiece {
+    func mapToPiece(using policy: LanguageResolutionPolicy?) -> MuseumPiece {
         MuseumPiece(
-            id: self.id,
-            title: nil,
-            date: nil,
-            creator: nil,
-            image: .init(url: self.imageURL)
+            id: id,
+            title: policy?.resolve(from: title?.values ?? [:]),
+            date: policy?.resolve(from: date?.values ?? [:]),
+            creator: policy?.resolve(from: creator?.values ?? [:]),
+            image: .init(url: imageURL)
         )
     }
 }

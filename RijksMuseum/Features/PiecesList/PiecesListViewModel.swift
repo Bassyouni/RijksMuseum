@@ -29,6 +29,8 @@ final class PiecesListViewModel {
     
     func loadData() async {
         viewState = .loading
+        hasMorePieces = true
+        
         do {
             let pieces = try await paginator.loadInitialPieces()
             viewState = .loaded(pieces)

@@ -117,9 +117,8 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadMore_whenHasMorePiecesIsFalse_doesNothing() async {
         let sut = makeSUT()
-        let pieces = [makePiece()]
         
-        env.paginator.stubbedResult = .success(pieces)
+        env.paginator.stubbedResult = .success([makePiece()])
         await sut.loadData()
         
         env.paginator.stubbedResult = .failure(.noMorePieces)
@@ -127,6 +126,24 @@ final class PiecesListViewModelTests: XCTestCase {
         
         await sut.loadMore()
         XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 1)
+    }
+    
+    func test_loadData_resetsHasMorePiecesToTrue() async {
+        let sut = makeSUT()
+        
+        env.paginator.stubbedResult = .success([makePiece()])
+        await sut.loadData()
+        
+        env.paginator.stubbedResult = .failure(.noMorePieces)
+        await sut.loadMore()
+        
+        env.paginator.stubbedResult = .success([makePiece()])
+        await sut.loadData()
+        
+        env.paginator.stubbedResult = .success([makePiece()])
+        await sut.loadMore()
+        
+        XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 2)
     }
 }
 

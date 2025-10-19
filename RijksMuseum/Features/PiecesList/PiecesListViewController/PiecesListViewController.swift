@@ -11,12 +11,13 @@ import UIKit
 class PiecesListViewController: UICollectionViewController {
     
     private let viewModel: PiecesListViewModel
-    private let imageResizer = IIIFImageResizer()
+    private let imageResizer: IIIFImageResizer
     
     private lazy var dataSource = createDataSource()
     
-    init(viewModel: PiecesListViewModel) {
+    init(viewModel: PiecesListViewModel, imageResizer: IIIFImageResizer = .init()) {
         self.viewModel = viewModel
+        self.imageResizer = imageResizer
         super.init(collectionViewLayout: Self.createLayout())
     }
     

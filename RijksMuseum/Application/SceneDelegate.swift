@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -16,7 +17,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
         
-        window.rootViewController = UINavigationController(rootViewController: PiecesListViewController())
+        let url = URL(string: "https://data.rijksmuseum.nl/search/collection")!
+        let client = URLSessionHTTPClient()
+        let loader = RemoteMuseumPiecesLoader(url: url, httpClient: client)
+        let paginator = RemoteMuseumPiecesPaginator(loader: loader, languagePolicy: LanguageResolutionPolicy())
+        let viewModel = PiecesListViewModel(paginator: paginator, coordinateToDetails: { _ in })
+        let piecesListViewController = PiecesListViewController(viewModel: viewModel)
+        let navigationController = UINavigationController(rootViewController: piecesListViewController)
+        
+        window.rootViewController = navigationController
         window.makeKeyAndVisible()
     }
 }

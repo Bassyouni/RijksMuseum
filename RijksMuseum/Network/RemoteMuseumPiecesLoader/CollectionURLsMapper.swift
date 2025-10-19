@@ -11,7 +11,7 @@ struct CollectionURLsMapper {
 
     private init() {}
 
-    static func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesFetcher.Error> {
+    static func map(data: Data) -> Result<(urls: [URL], nextPageToken: String?), RemoteMuseumPiecesLoader.Error> {
         guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
             return .failure(.invalidData)
         }

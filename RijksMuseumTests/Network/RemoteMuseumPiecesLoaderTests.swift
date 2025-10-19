@@ -1,5 +1,5 @@
 //
-//  RemoteMuseumPiecesFetcherTests.swift
+//  RemoteMuseumPiecesLoaderTests.swift
 //  RijksMuseum
 //
 //  Created by Dionne Hallegraeff on 16/10/2025.
@@ -9,113 +9,113 @@ import XCTest
 @testable import RijksMuseum
 
 @MainActor
-final class RemoteMuseumPiecesFetcherTests: XCTestCase {
+final class RemoteMuseumPiecesLoaderTests: XCTestCase {
     private let env = Environment()
     
-    // MARK: - fetchCollectionURLs
+    // MARK: - loadCollectionURLs
     
-    func test_fetchCollectionURLs_requestsDataFromURL() async {
+    func test_loadCollectionURLs_requestsDataFromURL() async {
         let url = URL(string: "www.a-url.com")
         let sut = makeSUT(url: url!)
         
-        _ = try? await sut.fetchCollectionURLs(nextPageToken: nil)
+        _ = try? await sut.loadCollectionURLs(nextPageToken: nil)
         
         XCTAssertEqual(env.client.requestedURLs, [url])
     }
     
-    func test_fetchCollectionURLs_whenPassingNextPageToken_appendsItToURL() async {
+    func test_loadCollectionURLs_whenPassingNextPageToken_appendsItToURL() async {
         let urlString = "www.a-url.com"
         let pageToken = "any-token"
         let sut = makeSUT(url: URL(string: urlString)!)
         
-        _ = try? await sut.fetchCollectionURLs(nextPageToken: pageToken)
+        _ = try? await sut.loadCollectionURLs(nextPageToken: pageToken)
         
         let expectedURL = URL(string: "\(urlString)?pageToken=\(pageToken)")
         XCTAssertEqual(env.client.requestedURLs, [expectedURL])
     }
     
-    func test_fetchCollectionURLs_deliversErrorOnError() async {
+    func test_loadCollectionURLs_deliversErrorOnError() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
         
         do  {
-            _ = try await sut.fetchCollectionURLs(nextPageToken: nil)
+            _ = try await sut.loadCollectionURLs(nextPageToken: nil)
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .networkError)
         }
     }
     
-    func test_fetchCollectionURLs_deliversErrorOnResponseWithInvalidJson() async {
+    func test_loadCollectionURLs_deliversErrorOnResponseWithInvalidJson() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .success(Data("".utf8))
         
         do  {
-            _ = try await sut.fetchCollectionURLs(nextPageToken: nil)
+            _ = try await sut.loadCollectionURLs(nextPageToken: nil)
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .invalidData)
         }
     }
     
-    func test_fetchCollectionURLs_deliversURLsOnValidResponse() async throws {
+    func test_loadCollectionURLs_deliversURLsOnValidResponse() async throws {
         let sut = makeSUT()
         let urls = [uniqueURL(), uniqueURL()]
         let jsonData = makeCollectionResponse(urls: urls.map(\.absoluteString))
         env.client.stubbedGetResult = .success(jsonData)
         
-        let (receivedURLs, _) = try await sut.fetchCollectionURLs(nextPageToken: nil)
+        let (receivedURLs, _) = try await sut.loadCollectionURLs(nextPageToken: nil)
         
         XCTAssertEqual(receivedURLs, urls)
     }
     
-    func test_fetchCollectionURLs_deliversNextPageTokenOnValidResponse() async throws {
+    func test_loadCollectionURLs_deliversNextPageTokenOnValidResponse() async throws {
         let sut = makeSUT()
         let nextPageToken = "any token"
         let jsonData = makeCollectionResponse(urls: [], nextPageToken: nextPageToken)
         env.client.stubbedGetResult = .success(jsonData)
         
-        let (_, receivedPageToken) = try await sut.fetchCollectionURLs(nextPageToken: nil)
+        let (_, receivedPageToken) = try await sut.loadCollectionURLs(nextPageToken: nil)
         
         XCTAssertEqual(receivedPageToken, nextPageToken)
     }
     
-    // MARK: - fetchMuseumPieceDetail
+    // MARK: - loadMuseumPieceDetail
     
-    func test_fetchMuseumPieceDetail_requestsDataFromURL() async {
+    func test_loadMuseumPieceDetail_requestsDataFromURL() async {
         let pieceDetailURL = uniqueURL()
         let sut = makeSUT(url: uniqueURL())
         
-        _ = try? await sut.fetchMuseumPieceDetail(url: pieceDetailURL)
+        _ = try? await sut.loadMuseumPieceDetail(url: pieceDetailURL)
         
         XCTAssertEqual(env.client.requestedURLs, [pieceDetailURL])
     }
     
-    func test_fetchMuseumPieceDetail_deliversErrorOnError() async {
+    func test_loadMuseumPieceDetail_deliversErrorOnError() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
         
         do  {
-            _ = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+            _ = try await sut.loadMuseumPieceDetail(url: uniqueURL())
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .networkError)
         }
     }
     
-    func test_fetchMuseumPieceDetail_deliversErrorOnResponseWithInvalidJson() async {
+    func test_loadMuseumPieceDetail_deliversErrorOnResponseWithInvalidJson() async {
         let sut = makeSUT()
         env.client.stubbedGetResult = .success(Data("".utf8))
         
         do  {
-            _ = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+            _ = try await sut.loadMuseumPieceDetail(url: uniqueURL())
             XCTFail("Expected load places to throw on error")
         } catch {
             XCTAssertEqual(error, .invalidData)
         }
     }
     
-    func test_fetchMuseumPieceDetail_deliversLocalizedTitleOnValidResponse() async throws {
+    func test_loadMuseumPieceDetail_deliversLocalizedTitleOnValidResponse() async throws {
         let sut = makeSUT()
         let (model, json) = makeObjectDetailsResponse(
             dutchTitle: "some dutch text",
@@ -125,12 +125,12 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     
         env.client.stubbedGetResult = .success(json)
         
-        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        let receivedModel = try await sut.loadMuseumPieceDetail(url: uniqueURL())
         
         XCTAssertEqual(receivedModel, model)
     }
     
-    func test_fetchMuseumPieceDetail_deliversLocalizedDateOnValidResponse() async throws {
+    func test_loadMuseumPieceDetail_deliversLocalizedDateOnValidResponse() async throws {
         let sut = makeSUT()
         let (model, json) = makeObjectDetailsResponse(
             dutchDate: "any dutch date",
@@ -140,12 +140,12 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     
         env.client.stubbedGetResult = .success(json)
         
-        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        let receivedModel = try await sut.loadMuseumPieceDetail(url: uniqueURL())
         
         XCTAssertEqual(receivedModel, model)
     }
     
-    func test_fetchMuseumPieceDetail_deliversLocalizedCreatorOnValidResponse() async throws {
+    func test_loadMuseumPieceDetail_deliversLocalizedCreatorOnValidResponse() async throws {
         let sut = makeSUT()
         let (model, json) = makeObjectDetailsResponse(
             dutchCreator: "any dutch",
@@ -155,12 +155,12 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
     
         env.client.stubbedGetResult = .success(json)
         
-        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        let receivedModel = try await sut.loadMuseumPieceDetail(url: uniqueURL())
         
         XCTAssertEqual(receivedModel, model)
     }
     
-    func test_fetchMuseumPieceDetail_requestsImageURLsInCorrectSequence() async {
+    func test_loadMuseumPieceDetail_requestsImageURLsInCorrectSequence() async {
         let sut = makeSUT()
         let pieceDetailURL = uniqueURL()
         let visualItemURL = uniqueURL()
@@ -172,12 +172,12 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
             .success(makeDigitalObjectJSON(iiifURL: uniqueURL()))
         ]
 
-        _ = try? await sut.fetchMuseumPieceDetail(url: pieceDetailURL)
+        _ = try? await sut.loadMuseumPieceDetail(url: pieceDetailURL)
 
         XCTAssertEqual(env.client.requestedURLs, [pieceDetailURL, visualItemURL, digitalObjectURL])
     }
 
-    func test_fetchMuseumPieceDetail_deliversIIIFImageURLOnValidResponse() async throws {
+    func test_loadMuseumPieceDetail_deliversIIIFImageURLOnValidResponse() async throws {
         let sut = makeSUT()
         let iiifImageURL = uniqueURL()
         let digitalObjectJSON = makeDigitalObjectJSON(iiifURL: iiifImageURL)
@@ -188,19 +188,19 @@ final class RemoteMuseumPiecesFetcherTests: XCTestCase {
             .success(digitalObjectJSON)
         ]
 
-        let receivedModel = try await sut.fetchMuseumPieceDetail(url: uniqueURL())
+        let receivedModel = try await sut.loadMuseumPieceDetail(url: uniqueURL())
 
         XCTAssertEqual(receivedModel.imageURL, iiifImageURL)
     }
 }
 
-private extension RemoteMuseumPiecesFetcherTests {
+private extension RemoteMuseumPiecesLoaderTests {
     struct Environment {
         let client = HTTPClientSpy()
     }
     
-    func makeSUT(url: URL = URL(string: "www.a-url.com")!, file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesFetcher {
-        let sut = RemoteMuseumPiecesFetcher(url: url, httpClient: self.env.client)
+    func makeSUT(url: URL = URL(string: "www.a-url.com")!, file: StaticString = #file, line: UInt = #line) -> RemoteMuseumPiecesLoader {
+        let sut = RemoteMuseumPiecesLoader(url: url, httpClient: self.env.client)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
     }

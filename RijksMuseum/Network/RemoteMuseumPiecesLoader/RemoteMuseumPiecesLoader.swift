@@ -1,5 +1,5 @@
 //
-//  RemoteMuseumPiecesFetcher.swift
+//  RemoteMuseumPiecesLoader.swift
 //  RijksMuseum
 //
 //  Created by Dionne Hallegraeff on 16/10/2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class RemoteMuseumPiecesFetcher {
+final class RemoteMuseumPiecesLoader: MuseumPiecesLoader {
     
     private let url: URL
     private let httpClient: HTTPClient
@@ -23,7 +23,7 @@ final class RemoteMuseumPiecesFetcher {
     }
     
     @concurrent
-    func fetchCollectionURLs(nextPageToken: String?) async throws(Error) -> (urls: [URL], nextPageToken: String?) {
+    func loadCollectionURLs(nextPageToken: String?) async throws(Error) -> (urls: [URL], nextPageToken: String?) {
         var url = self.url
         
         if let token = nextPageToken {
@@ -38,7 +38,7 @@ final class RemoteMuseumPiecesFetcher {
     }
     
     @concurrent
-    func fetchMuseumPieceDetail(url: URL) async throws(Error) -> LocalizedPiece {
+    func loadMuseumPieceDetail(url: URL) async throws(Error) -> LocalizedPiece {
         guard let data = try? await httpClient.get(url: url) else {
             throw .networkError
         }

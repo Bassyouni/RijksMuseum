@@ -11,7 +11,7 @@ struct PieceDetailsMapper {
 
     private init() {}
 
-    static func map(data: Data) -> Result<(piece: LocalizedPiece, visualItemURL: URL?), RemoteMuseumPiecesFetcher.Error> {
+    static func map(data: Data) -> Result<(piece: LocalizedPiece, visualItemURL: URL?), RemoteMuseumPiecesLoader.Error> {
         guard let root = try? JSONDecoder().decode(Root.self, from: data) else {
             return .failure(.invalidData)
         }

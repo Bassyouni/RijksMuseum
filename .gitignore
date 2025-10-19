@@ -110,3 +110,6 @@ iOSInjectionProject/
 
 # AppCode
 .idea/
+
+# Claude Code
+.claude/

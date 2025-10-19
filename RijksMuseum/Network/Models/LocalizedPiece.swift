@@ -7,12 +7,6 @@
 
 import Foundation
 
-enum Language: Equatable {
-    case dutch
-    case english
-    case unknown
-}
-
 struct Localized<T: Equatable>: Equatable {
     let values: [Language: T]
     init(_ values: [Language: T]) {

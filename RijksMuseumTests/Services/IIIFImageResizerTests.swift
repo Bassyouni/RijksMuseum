@@ -11,10 +11,10 @@ import XCTest
 @MainActor
 final class IIIFImageResizerTests: XCTestCase {
     func test_imageURL_replacesMaxKeywordWithSize() {
-        let url = "https://iiif.micr.io/qcYVp/full/max/0/default.jpg"
-        let sut = makeSUT(url: url)
+        let url = URL(string: "https://iiif.micr.io/qcYVp/full/max/0/default.jpg")!
+        let sut = makeSUT()
         
-        let newURL = sut.imageURL(width: 200, height: 300)
+        let newURL = sut.newImageURL(from: url, width: 200, height: 300)
         
         let expectedURL = URL(string: "https://iiif.micr.io/qcYVp/full/200,300/0/default.jpg")
         XCTAssertEqual(newURL, expectedURL)
@@ -22,7 +22,7 @@ final class IIIFImageResizerTests: XCTestCase {
 }
 
 private extension IIIFImageResizerTests {
-    func makeSUT(url: String? = nil, file: StaticString = #file, line: UInt = #line) -> IIIFImageResizer {
-        return IIIFImageResizer(url: URL(string: url ?? ""))
+    func makeSUT(file: StaticString = #file, line: UInt = #line) -> IIIFImageResizer {
+        return IIIFImageResizer()
     }
 }

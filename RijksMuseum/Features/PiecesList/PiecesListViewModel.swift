@@ -11,13 +11,17 @@ import Foundation
 @MainActor
 final class PiecesListViewModel {
     
-    private let paginator: MuseumPiecesPaginator
     private(set) var viewState: ViewState = .idle
+    
     private(set) var isLoadingMore = false
     private var hasMorePieces: Bool = true
     
-    init(paginator: MuseumPiecesPaginator) {
+    private let coordinateToDetails: (Piece) -> Void
+    private let paginator: MuseumPiecesPaginator
+    
+    init(paginator: MuseumPiecesPaginator, coordinateToDetails: @escaping (Piece) -> Void) {
         self.paginator = paginator
+        self.coordinateToDetails = coordinateToDetails
     }
     
     func loadData() async {
@@ -44,5 +48,11 @@ final class PiecesListViewModel {
             guard case .noMorePieces = error else { return }
             hasMorePieces = false
         }
+    }
+    
+    func onPieceSelected(at index: Int) {
+        guard case .loaded(let pieces) = viewState, index <= pieces.count  else { return }
+        
+        coordinateToDetails(pieces[index])
     }
 }

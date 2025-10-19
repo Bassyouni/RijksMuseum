@@ -129,15 +129,50 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 2)
     }
     
+    // MARK: - onPieceSelected
+    func test_onPieceSelected_whenNotInLoadedState_doesNothing() async {
+        let sut = makeSUT()
+        
+        sut.onPieceSelected(at: 0)
+        
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [])
+    }
+    
+    func test_onPieceSelected_whenIndexOutOfBounds_doesNothing() async {
+        let sut = makeSUT()
+        let pieces = [makePiece()]
+        await givenInitalDataLoaded(with: pieces, sut)
+        
+        sut.onPieceSelected(at: 2)
+        
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [])
+    }
+    
+    func test_onPieceSelected_callsCoordinateToDetailsWithSelectedPiece() async {
+        let sut = makeSUT()
+        let pice1 = makePiece()
+        let pice2 = makePiece()
+        await givenInitalDataLoaded(with: [pice1, pice2], sut)
+        
+        sut.onPieceSelected(at: 1)
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [pice2])
+        
+        sut.onPieceSelected(at: 0)
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [pice2, pice1])
+    }
  }
 
 private extension PiecesListViewModelTests {
     struct Environment {
         let paginator = MuseumPiecesPaginatorSpy()
+        let coordinatorSpy = CoordinatorSpy()
     }
     
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> PiecesListViewModel {
-        let sut = PiecesListViewModel(paginator: env.paginator)
+        let sut = PiecesListViewModel(
+            paginator: env.paginator,
+            coordinateToDetails: env.coordinatorSpy.coordinate(piece:)
+        )
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
@@ -217,5 +252,14 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
     
     func completeWith(_ error: PaginationError) {
         continuation?.resume(throwing: error)
+    }
+}
+
+final class CoordinatorSpy {
+    private(set) var coordinateToDetailsCallCount: Int = 0
+    private(set) var coordinatedPieces = [Piece]()
+    
+    func coordinate(piece: Piece) {
+        coordinatedPieces.append(piece)
     }
 }

@@ -50,8 +50,7 @@ final class PiecesListViewModelTests: XCTestCase {
     // MARK: - loadMore
     func test_loadMore_requestsMorePiecesFromPaginator() async {
         let sut = makeSUT()
-        env.paginator.stubbedResult = .success([makePiece()])
-        await sut.loadData()
+        await givenInitalDataLoaded(sut)
         
         env.paginator.stubbedResult = .success([])
         await sut.loadMore()
@@ -61,8 +60,7 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadMore_setsIsLoadingMoreDuringOperation() async {
         let sut = makeSUT()
-        env.paginator.stubbedResult = .success([makePiece()])
-        await sut.loadData()
+        await givenInitalDataLoaded(sut)
         
         env.paginator.stubbedResult = nil
         async let loadMore: () = sut.loadMore()
@@ -87,9 +85,7 @@ final class PiecesListViewModelTests: XCTestCase {
         let sut = makeSUT()
         let initialPieces = [makePiece(), makePiece()]
         let newPieces = [makePiece(), makePiece()]
-        
-        env.paginator.stubbedResult = .success(initialPieces)
-        await sut.loadData()
+        await givenInitalDataLoaded(with: initialPieces, sut)
         
         env.paginator.stubbedResult = .success(newPieces)
         await sut.loadMore()
@@ -100,52 +96,40 @@ final class PiecesListViewModelTests: XCTestCase {
     func test_loadMore_onLoadMoreError_keepsCurrentStateAndHidesLoading() async {
         let sut = makeSUT()
         let pieces = [makePiece()]
+        await givenInitalDataLoaded(with: pieces, sut)
         
-        env.paginator.stubbedResult = .success(pieces)
-        await sut.loadData()
-        
-        env.paginator.stubbedResult = .failure(.unknownError)
-        await sut.loadMore()
+        await givenLoadMoreDataLoaded(with: .failure(.unknownError), sut)
         XCTAssertEqual(sut.isLoadingMore, false)
         XCTAssertEqual(sut.viewState, .loaded(pieces))
         
-        env.paginator.stubbedResult = .failure(.noMorePieces)
-        await sut.loadMore()
+        await givenLoadMoreDataLoaded(with: .failure(.noMorePieces), sut)
         XCTAssertEqual(sut.isLoadingMore, false)
         XCTAssertEqual(sut.viewState, .loaded(pieces))
     }
     
     func test_loadMore_whenHasMorePiecesIsFalse_doesNothing() async {
         let sut = makeSUT()
-        
-        env.paginator.stubbedResult = .success([makePiece()])
-        await sut.loadData()
-        
-        env.paginator.stubbedResult = .failure(.noMorePieces)
-        await sut.loadMore()
+        await givenInitalDataLoaded(sut)
+        await givenLoadMoreDataLoaded(with: .failure(.noMorePieces), sut)
         
         await sut.loadMore()
+        
         XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 1)
     }
     
     func test_loadData_resetsHasMorePiecesToTrue() async {
         let sut = makeSUT()
-        
-        env.paginator.stubbedResult = .success([makePiece()])
-        await sut.loadData()
-        
-        env.paginator.stubbedResult = .failure(.noMorePieces)
-        await sut.loadMore()
-        
-        env.paginator.stubbedResult = .success([makePiece()])
-        await sut.loadData()
+        await givenInitalDataLoaded(sut)
+        await givenLoadMoreDataLoaded(with: .failure(.noMorePieces), sut)
+        await givenInitalDataLoaded(sut)
         
         env.paginator.stubbedResult = .success([makePiece()])
         await sut.loadMore()
         
         XCTAssertEqual(env.paginator.loadMorePiecesCallCount, 2)
     }
-}
+    
+ }
 
 private extension PiecesListViewModelTests {
     struct Environment {
@@ -166,6 +150,16 @@ private extension PiecesListViewModelTests {
             creator: nil,
             image: nil
         )
+    }
+    
+    func givenInitalDataLoaded(with data: [Piece]? = nil,_ sut: PiecesListViewModel) async {
+        env.paginator.stubbedResult = .success(data ?? [makePiece()])
+        await sut.loadData()
+    }
+    
+    func givenLoadMoreDataLoaded(with result: Result<[Piece], PaginationError>,_ sut: PiecesListViewModel) async {
+        env.paginator.stubbedResult = result
+        await sut.loadMore()
     }
 }
 

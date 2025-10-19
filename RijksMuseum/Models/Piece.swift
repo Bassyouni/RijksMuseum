@@ -12,18 +12,5 @@ struct Piece: Equatable, Identifiable, Hashable {
     let title: String?
     let date: String?
     let creator: String?
-    let image: ResizableImage?
-}
-
-struct ResizableImage: Equatable, Hashable {
-    private let url: URL?
-
-    init(url: URL?) {
-        self.url = url
-    }
-    
-    func imageURL(width: Double, height: Double) -> URL? {
-        // TODO: add logic
-        return url
-    }
+    let imageURL: ResizableImageURL?
 }

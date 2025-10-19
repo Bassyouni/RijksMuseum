@@ -183,7 +183,7 @@ private extension PiecesListViewModelTests {
             title: nil,
             date: nil,
             creator: nil,
-            image: nil
+            imageURL: nil
         )
     }
     

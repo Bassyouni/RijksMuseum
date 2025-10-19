@@ -151,7 +151,7 @@ private extension RemoteMuseumPiecesPaginatorTests {
                 title: env.policy.resolve(from: $0.title?.values ?? [:]),
                 date: env.policy.resolve(from: $0.date?.values ?? [:]),
                 creator: env.policy.resolve(from: $0.creator?.values ?? [:]),
-                image: ResizableImage(url: $0.imageURL)
+                imageURL: ResizableImageURL(url: $0.imageURL)
             )
         })
     }

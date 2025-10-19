@@ -23,6 +23,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         
         XCTAssertEqual(env.loader.loadPieceDetailURLs, first10PiecesURLs)
     }
+        
 }
 
 private extension RemoteMuseumPiecesPaginatorTests {
@@ -34,11 +35,6 @@ private extension RemoteMuseumPiecesPaginatorTests {
         let sut = RemoteMuseumPiecesPaginator(loader: env.loader)
         checkForMemoryLeaks(sut, file: file, line: line)
         return sut
-    }
-    
-    // TODO: move to a common file
-    func uniqueURL() -> URL {
-        URL(string: "www.\(UUID().uuidString).nl")!
     }
     
     func makePieces(count: Int) -> [LocalizedPiece] {
@@ -68,15 +64,4 @@ private final class MuseumPiecesLoaderSpy: MuseumPiecesLoader {
         
         return try stubbedLoadMuseumPieceDetailResults.removeFirst().get()
     }
-}
-
-// TODO: move to a common file
-extension Result where Failure == Error {
-    static func fail() -> Self {
-        .failure(NSError(domain: "test", code: 0))
-    }
-}
-
-var anyError: Error {
-    NSError(domain: "test", code: 0)
 }

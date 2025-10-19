@@ -36,7 +36,7 @@ final class RemoteMuseumPiecesLoaderTests: XCTestCase {
     
     func test_loadCollectionURLs_deliversErrorOnError() async {
         let sut = makeSUT()
-        env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
+        env.client.stubbedGetResult = .fail()
         
         do  {
             _ = try await sut.loadCollectionURLs(nextPageToken: nil)
@@ -93,7 +93,7 @@ final class RemoteMuseumPiecesLoaderTests: XCTestCase {
     
     func test_loadMuseumPieceDetail_deliversErrorOnError() async {
         let sut = makeSUT()
-        env.client.stubbedGetResult = .failure(NSError(domain: "test", code: 0))
+        env.client.stubbedGetResult = .fail()
         
         do  {
             _ = try await sut.loadMuseumPieceDetail(url: uniqueURL())
@@ -220,11 +220,7 @@ private extension RemoteMuseumPiecesLoaderTests {
         
         return try! JSONSerialization.data(withJSONObject: json)
     }
-    
-    func uniqueURL() -> URL {
-        URL(string: "www.\(UUID().uuidString).nl")!
-    }
-    
+
     func makeObjectDetailsResponse(
         id: String = UUID().uuidString,
         dutchTitle: String? = nil,

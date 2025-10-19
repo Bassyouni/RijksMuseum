@@ -25,6 +25,14 @@ final class LanguageResolutionPolicyTests: XCTestCase {
         
         XCTAssertEqual(received, "english")
     }
+    
+    func test_resolve_whenNeitherThePreffedOrTheFallBackExists_picksUnknown() {
+        let sut = makeSUT()
+        
+        let received = sut.resolve(from: [.unknown: "unknowun"])
+        
+        XCTAssertEqual(received, "unknowun")
+    }
 }
 
 private extension LanguageResolutionPolicyTests {

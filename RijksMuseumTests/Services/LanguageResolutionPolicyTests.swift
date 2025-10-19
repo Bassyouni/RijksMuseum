@@ -1,0 +1,26 @@
+//
+//  LanguageResolutionPolicyTests.swift
+//  RijksMuseumTests
+//
+//  Created by Omar Bassyouni on 19/10/2025.
+//
+
+import XCTest
+@testable import RijksMuseum
+
+@MainActor
+final class LanguageResolutionPolicyTests: XCTestCase {
+    func test_resolve_picksDutchAsThePreferdLanguage() {
+        let sut = makeSUT()
+        
+        let received = sut.resolve(from: [.unknown: "unknowun", .dutch: "dutch", .english: "english"])
+        
+        XCTAssertEqual(received, "dutch")
+    }
+}
+
+private extension LanguageResolutionPolicyTests {
+    func makeSUT(file: StaticString = #file, line: UInt = #line) -> LanguageResolutionPolicy {
+        return LanguageResolutionPolicy()
+    }
+}

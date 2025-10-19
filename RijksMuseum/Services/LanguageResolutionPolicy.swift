@@ -12,6 +12,11 @@ struct LanguageResolutionPolicy {
     private let prefferdLanguages = [Language.dutch, .english, .unknown]
     
     func resolve(from languages: [Language: String]) -> String {
-        return "dutch"
+        if languages.contains(where: { (key, value) in
+            return key == .dutch
+        }) {
+            return "dutch"
+        }
+        return "english"
     }
 }

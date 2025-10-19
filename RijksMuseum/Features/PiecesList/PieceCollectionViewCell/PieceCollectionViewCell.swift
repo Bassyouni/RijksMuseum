@@ -79,8 +79,6 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         shimmerView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            contentView.widthAnchor.constraint(equalToConstant: currentScreenWidth),
-            
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -145,6 +143,6 @@ final class PieceCollectionViewCell: UICollectionViewCell {
     }
     
     private var currentScreenWidth: CGFloat {
-        UIWindow.current?.bounds.width ?? 300
+        contentView.window?.windowScene?.screen.bounds.width ?? 400
     }
 }

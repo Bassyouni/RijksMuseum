@@ -31,27 +31,31 @@ class PiecesListViewController: UICollectionViewController {
         Task { await viewModel.loadData() }
     }
     
-    private func startObserving() {
-        withObservationTracking {
-            _ = viewModel.viewState
-        } onChange: { [weak self] in
-            DispatchQueue.main.async {
-                self?.updateUI(for: self?.viewModel.viewState ?? .idle)
-                self?.startObserving()
-            }
-        }
+    private static func createLayout() -> UICollectionViewCompositionalLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(400)
+        )
         
-        updateUI(for: viewModel.viewState)
-    }
-    
-    private static func createLayout() -> UICollectionViewFlowLayout {
-        let layout = UICollectionViewFlowLayout()
-        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
-        layout.minimumInteritemSpacing = 0
-        layout.minimumLineSpacing = 20
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0)
-        layout.footerReferenceSize = CGSize(width: 0, height: 60)
-        return layout
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 20
+        section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0)
+        
+        let footerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(60)
+        )
+        let footer = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: footerSize,
+            elementKind: UICollectionView.elementKindSectionFooter,
+            alignment: .bottom
+        )
+        section.boundarySupplementaryItems = [footer]
+        
+        return UICollectionViewCompositionalLayout(section: section)
     }
     
     private func setupViews() {
@@ -75,6 +79,34 @@ class PiecesListViewController: UICollectionViewController {
         
         collectionView.dataSource = dataSource
         collectionView.prefetchDataSource = self
+    }
+    
+    private func startObserving() {
+        startObservingViewState()
+        startObservingFooter()
+        updateUI(for: viewModel.viewState)
+    }
+    
+    private func startObservingViewState() {
+        withObservationTracking {
+            _ = viewModel.viewState
+        } onChange: { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateUI(for: self?.viewModel.viewState ?? .idle)
+                self?.startObservingViewState()
+            }
+        }
+    }
+    
+    private func startObservingFooter() {
+        withObservationTracking {
+            _ = viewModel.isLoadingMore
+        } onChange: { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateFooter()
+                self?.startObservingFooter()
+            }
+        }
     }
     
     private func updateUI(for viewState: ViewState) {
@@ -105,6 +137,13 @@ class PiecesListViewController: UICollectionViewController {
             }
             
             contentUnavailableConfiguration = config
+        }
+    }
+    
+    private func updateFooter() {
+        let footerIndexPath = IndexPath(item: 0, section: 0)
+        if let footerView = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionFooter, at: footerIndexPath) as? LoadingFooterView {
+            footerView.configure(isLoading: viewModel.isLoadingMore)
         }
     }
 }
@@ -147,7 +186,7 @@ private extension PiecesListViewController {
         var snapshot = Snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(pieces, toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
@@ -159,18 +198,17 @@ extension PiecesListViewController {
     }
 }
 
+
 // MARK: - UICollectionViewDataSourcePrefetching
 extension PiecesListViewController: UICollectionViewDataSourcePrefetching {
     
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         guard case .loaded(let pieces) = viewModel.viewState else { return }
         
-        let maxIndex = indexPaths.compactMap { $0.item }.max() ?? 0
-        let threshold = pieces.count - 4
-        
-        if maxIndex >= threshold && !viewModel.isLoadingMore {
-            Task {
-                await viewModel.loadMore()
+        for indexPath in indexPaths {
+            if indexPath.item >= pieces.count - 5 && !viewModel.isLoadingMore {
+                Task { await viewModel.loadMore() }
+                return
             }
         }
     }

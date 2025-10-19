@@ -7,6 +7,11 @@
 
 import Foundation
 
+enum PaginationError: Error {
+    case noMorePieces
+    case unknownError
+}
+
 final class RemoteMuseumPiecesPaginator {
     
     private let batchCount = 10
@@ -20,12 +25,16 @@ final class RemoteMuseumPiecesPaginator {
         self.languagePolicy = languagePolicy
     }
     
-    func loadInitialPieces() async throws -> [Piece] {
+    func loadInitialPieces() async throws(PaginationError) -> [Piece] {
         try await loadCollectionURLs()
         return await processNextBatch()
     }
     
-    func loadMorePieces() async throws -> [Piece] {
+    func loadMorePieces() async throws(PaginationError) -> [Piece] {
+        if currentBatchURLs.isEmpty && nextPageToken == nil {
+            throw .noMorePieces
+        }
+        
         if currentBatchURLs.isEmpty {
             try await loadCollectionURLs()
         }
@@ -33,19 +42,24 @@ final class RemoteMuseumPiecesPaginator {
         return await processNextBatch()
     }
     
-    private func loadCollectionURLs() async throws {
-        let (receivedURLs, nextPageToken) = try await loader.loadCollectionURLs(nextPageToken: nextPageToken)
-        self.currentBatchURLs = receivedURLs
-        self.nextPageToken = nextPageToken
+    private func loadCollectionURLs() async throws(PaginationError) {
+        do {
+            let response = try await loader.loadCollectionURLs(nextPageToken: nextPageToken)
+            self.currentBatchURLs = response.urls
+            self.nextPageToken = response.nextPageToken
+        }
+        catch {
+            throw .unknownError
+        }
     }
-
+    
     private func processNextBatch() async -> [Piece] {
         let firstBatchURLs = Array(currentBatchURLs.prefix(batchCount))
         
         defer {
             currentBatchURLs = Array(currentBatchURLs.dropFirst(batchCount))
         }
-    
+        
         return await loadPieces(for: firstBatchURLs)
     }
     

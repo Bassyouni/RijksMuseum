@@ -14,7 +14,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
     private let env = Environment()
     private let batchCount = 10
     
-    func test_loadInitialPieces_throwsOnLoaderFailure() async {
+    func test_loadInitialPieces_throwsUnKnowenOnLoaderFailure() async {
         let sut = makeSUT()
         env.loader.stubbedLoadCollectionURLsResult = .failure(anyError)
         
@@ -22,7 +22,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
             _ = try await sut.loadInitialPieces()
             XCTFail("Expected to receive an error")
         } catch {
-            XCTAssertEqual(error as NSError, anyError)
+            XCTAssertEqual(error, .unknownError)
         }
     }
     
@@ -85,7 +85,20 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
         _ = try? await sut.loadMorePieces()
         
         XCTAssertEqual(env.loader.loadCollectionPageTokens, [nil, nextPageToken])
-
+    }
+    
+    func test_loadMorePieces_throwsNoMorePiecesWhenNextPageTokenIsNil() async {
+        let sut = makeSUT()
+        env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: batchCount), nil))
+        env.loader.stubbedLoadPieceDetailResults = makePieces(count: batchCount).map { .success($0) }
+        _ = try? await sut.loadInitialPieces()
+        
+        do {
+            _ = try await sut.loadMorePieces()
+            XCTFail("Expected to receive noMorePieces error")
+        } catch  {
+            XCTAssertEqual(error, .noMorePieces)
+        }
     }
 }
 

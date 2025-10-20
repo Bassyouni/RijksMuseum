@@ -104,7 +104,7 @@ struct PiecesDetailsView: View {
                 title: "The Night Watch",
                 date: "1642",
                 creator: "Rembrandt van Rijn",
-                imageURL: URL(string: "hattps://iiif.micr.io/qcYVp/full/max/0/default.jpg")
+                imageURL: URL(string: "https://iiif.micr.io/qcYVp/full/max/0/default.jpg")
             ),
             imageResizer: IIIFImageResizer()
         )

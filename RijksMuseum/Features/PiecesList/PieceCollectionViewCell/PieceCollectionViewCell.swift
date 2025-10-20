@@ -14,7 +14,7 @@ final class PieceCollectionViewCell: UICollectionViewCell {
     private let titleLabel = UILabel()
     private let creatorLabel = UILabel()
     private let dateLabel = UILabel()
-    private let shimmerView = UIView()
+    private let shimmerView = ShimmerUIView(frame: .zero)
     private let imageHeight: CGFloat = 300
     
     override init(frame: CGRect) {
@@ -36,6 +36,7 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         dateLabel.text = nil
         showShimmer()
     }
+    
     
     private func setupViews() {
         backgroundColor = .systemBackground
@@ -59,10 +60,6 @@ final class PieceCollectionViewCell: UICollectionViewCell {
         dateLabel.textColor = .tertiaryLabel
         dateLabel.numberOfLines = 1
         dateLabel.textAlignment = .left
-        
-        shimmerView.backgroundColor = .systemGray5
-        shimmerView.layer.cornerRadius = 4
-        shimmerView.isHidden = true
         
         contentView.addSubview(imageView)
         contentView.addSubview(titleLabel)
@@ -135,11 +132,14 @@ final class PieceCollectionViewCell: UICollectionViewCell {
     }
     
     private func showShimmer() {
+        shimmerView.startShimmering()
         shimmerView.isHidden = false
+        
     }
     
     private func hideShimmer() {
         shimmerView.isHidden = true
+        shimmerView.stopShimmering()
     }
     
     private var currentScreenWidth: CGFloat {

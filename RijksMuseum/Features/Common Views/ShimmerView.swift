@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-private final class UIShimmerView: UIView {
+final class ShimmerUIView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,7 +24,7 @@ private final class UIShimmerView: UIView {
         return "shimmer"
     }
     
-    private func startShimmering() {
+    func startShimmering() {
         let white = UIColor.white.cgColor
         let alpha = UIColor.white.withAlphaComponent(0.75).cgColor
         let width = bounds.width
@@ -47,7 +47,7 @@ private final class UIShimmerView: UIView {
         gradient.add(animation, forKey: shimmerAnimationKey)
     }
     
-    private func stopShimmering() {
+    func stopShimmering() {
         layer.mask = nil
     }
 }
@@ -61,7 +61,7 @@ struct ShimmerView: UIViewRepresentable {
     }
  
     func makeUIView(context: Context) -> UIView {
-        return UIShimmerView(frame: frame)
+        return ShimmerUIView(frame: frame)
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {}

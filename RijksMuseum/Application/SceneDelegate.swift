@@ -11,7 +11,7 @@ import SwiftUI
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-    var coordinator: PiecesListCoordinator?
+    var coordinator: NavigationCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -20,7 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let navigationController = UINavigationController()
         let factory = ViewsFactory()
-        coordinator = PiecesListCoordinator(navigationController: navigationController, factory: factory)
+        coordinator = NavigationCoordinator(navigationController: navigationController, factory: factory)
         coordinator?.start()
         
         window.rootViewController = navigationController

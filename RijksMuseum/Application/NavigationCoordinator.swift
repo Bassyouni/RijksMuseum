@@ -1,5 +1,5 @@
 //
-//  PiecesListCoordinator.swift
+//  NavigationCoordinator.swift
 //  RijksMuseum
 //
 //  Created by Omar Bassyouni on 19/10/2025.
@@ -9,7 +9,7 @@ import UIKit
 import SwiftUI
 
 @MainActor
-final class PiecesListCoordinator {
+final class NavigationCoordinator {
     
     private let navigationController: UINavigationController
     private let factory: PiecesViewsFactory

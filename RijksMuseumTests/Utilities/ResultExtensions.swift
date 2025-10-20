@@ -1,5 +1,5 @@
 //
-//  ResultExtenstions.swift
+//  ResultExtensions.swift
 //  RijksMuseum
 //
 //  Created by Omar Bassyouni on 19/10/2025.

@@ -26,7 +26,7 @@ final class PiecesListViewModelTests: XCTestCase {
         let sut = makeSUT()
         
         async let loadData: () = sut.loadData()
-        await env.paginator.waitForLoadInitalPiecesToStart()
+        await env.paginator.waitForLoadInitialPiecesToStart()
         XCTAssertEqual(sut.viewState, .loading)
         
         env.paginator.completeWith(.unknownError)
@@ -34,12 +34,12 @@ final class PiecesListViewModelTests: XCTestCase {
         XCTAssertEqual(sut.viewState, .error("Something went wrong"))
     }
     
-    func test_loadData_onPagiantorSucess_viewStateIsLoadedWithData() async throws {
+    func test_loadData_onPaginatorSuccess_viewStateIsLoadedWithData() async throws {
         let sut = makeSUT()
         let pieces = [makePiece(), makePiece()]
         
         async let loadData: () = sut.loadData()
-        await env.paginator.waitForLoadInitalPiecesToStart()
+        await env.paginator.waitForLoadInitialPiecesToStart()
         XCTAssertEqual(sut.viewState, .loading)
         
         env.paginator.completeWith(pieces)
@@ -50,7 +50,7 @@ final class PiecesListViewModelTests: XCTestCase {
     // MARK: - loadMore
     func test_loadMore_requestsMorePiecesFromPaginator() async {
         let sut = makeSUT()
-        await givenInitalDataLoaded(sut)
+        await givenInitialDataLoaded(sut)
         
         env.paginator.stubbedResult = .success([])
         await sut.loadMore()
@@ -60,7 +60,7 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadMore_setsIsLoadingMoreDuringOperation() async {
         let sut = makeSUT()
-        await givenInitalDataLoaded(sut)
+        await givenInitialDataLoaded(sut)
         
         env.paginator.stubbedResult = nil
         async let loadMore: () = sut.loadMore()
@@ -85,7 +85,7 @@ final class PiecesListViewModelTests: XCTestCase {
         let sut = makeSUT()
         let initialPieces = [makePiece(), makePiece()]
         let newPieces = [makePiece(), makePiece()]
-        await givenInitalDataLoaded(with: initialPieces, sut)
+        await givenInitialDataLoaded(with: initialPieces, sut)
         
         env.paginator.stubbedResult = .success(newPieces)
         await sut.loadMore()
@@ -96,7 +96,7 @@ final class PiecesListViewModelTests: XCTestCase {
     func test_loadMore_onLoadMoreError_keepsCurrentStateAndHidesLoading() async {
         let sut = makeSUT()
         let pieces = [makePiece()]
-        await givenInitalDataLoaded(with: pieces, sut)
+        await givenInitialDataLoaded(with: pieces, sut)
         
         await givenLoadMoreDataLoaded(with: .failure(.unknownError), sut)
         XCTAssertEqual(sut.isLoadingMore, false)
@@ -109,7 +109,7 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadMore_whenHasMorePiecesIsFalse_doesNothing() async {
         let sut = makeSUT()
-        await givenInitalDataLoaded(sut)
+        await givenInitialDataLoaded(sut)
         await givenLoadMoreDataLoaded(with: .failure(.noMorePieces), sut)
         
         await sut.loadMore()
@@ -119,9 +119,9 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_loadData_resetsHasMorePiecesToTrue() async {
         let sut = makeSUT()
-        await givenInitalDataLoaded(sut)
+        await givenInitialDataLoaded(sut)
         await givenLoadMoreDataLoaded(with: .failure(.noMorePieces), sut)
-        await givenInitalDataLoaded(sut)
+        await givenInitialDataLoaded(sut)
         
         env.paginator.stubbedResult = .success([makePiece()])
         await sut.loadMore()
@@ -141,7 +141,7 @@ final class PiecesListViewModelTests: XCTestCase {
     func test_onPieceSelected_whenIndexOutOfBounds_doesNothing() async {
         let sut = makeSUT()
         let pieces = [makePiece()]
-        await givenInitalDataLoaded(with: pieces, sut)
+        await givenInitialDataLoaded(with: pieces, sut)
         
         sut.onPieceSelected(at: 2)
         
@@ -150,15 +150,15 @@ final class PiecesListViewModelTests: XCTestCase {
     
     func test_onPieceSelected_callsCoordinateToDetailsWithSelectedPiece() async {
         let sut = makeSUT()
-        let pice1 = makePiece()
-        let pice2 = makePiece()
-        await givenInitalDataLoaded(with: [pice1, pice2], sut)
+        let piece1 = makePiece()
+        let piece2 = makePiece()
+        await givenInitialDataLoaded(with: [piece1, piece2], sut)
         
         sut.onPieceSelected(at: 1)
-        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [pice2])
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [piece2])
         
         sut.onPieceSelected(at: 0)
-        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [pice2, pice1])
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [piece2, piece1])
     }
  }
 
@@ -178,7 +178,7 @@ private extension PiecesListViewModelTests {
     }
     
     
-    func givenInitalDataLoaded(with data: [Piece]? = nil,_ sut: PiecesListViewModel) async {
+    func givenInitialDataLoaded(with data: [Piece]? = nil,_ sut: PiecesListViewModel) async {
         env.paginator.stubbedResult = .success(data ?? [makePiece()])
         await sut.loadData()
     }
@@ -225,7 +225,7 @@ final class MuseumPiecesPaginatorSpy: MuseumPiecesPaginator {
         catch { throw error as! PaginationError }
     }
     
-    func waitForLoadInitalPiecesToStart() async {
+    func waitForLoadInitialPiecesToStart() async {
         while loadInitialPiecesCallCount == 0 {
             await Task.yield()
         }

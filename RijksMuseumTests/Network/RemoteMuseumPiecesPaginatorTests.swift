@@ -14,7 +14,7 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
     private let env = Environment()
     private let batchCount = 10
     
-    func test_loadInitialPieces_throwsUnKnowenOnLoaderFailure() async {
+    func test_loadInitialPieces_throwsUnknownOnLoaderFailure() async {
         let sut = makeSUT()
         env.loader.stubbedLoadCollectionURLsResult = .failure(anyError)
         
@@ -51,13 +51,13 @@ final class RemoteMuseumPiecesPaginatorTests: XCTestCase {
     
     func test_loadInitialPieces_onLoadingPieceDetailsFailure_skipsModel() async throws {
         let sut = makeSUT()
-        let succesPiece = makePieces(count: 1).first!
-        env.loader.stubbedLoadPieceDetailResults = [.fail(), .success(succesPiece)]
+        let successPiece = makePieces(count: 1).first!
+        env.loader.stubbedLoadPieceDetailResults = [.fail(), .success(successPiece)]
         env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: 2), nil))
         
         let receivedPieces = try await sut.loadInitialPieces()
         
-        XCTAssertEqual(Set(receivedPieces), mapToPieces([succesPiece]))
+        XCTAssertEqual(Set(receivedPieces), mapToPieces([successPiece]))
     }
     
     func test_loadMorePieces_loadsNextTenPiecesWithCorrectURLs() async throws {
@@ -128,7 +128,7 @@ private extension RemoteMuseumPiecesPaginatorTests {
         return sut
     }
 
-    func givenLoadCollectionURLsIsStubbbed() {
+    func givenLoadCollectionURLsIsStubbed() {
         env.loader.stubbedLoadCollectionURLsResult = .success((makeURLs(count: batchCount + 1), nil))
     }
     

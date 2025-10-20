@@ -1,5 +1,5 @@
 //
-//  StreatchyV.swift
+//  StretchyVisualEffect.swift
 //  RijksMuseum
 //
 //  Created by Omar Bassyouni on 19/10/2025.

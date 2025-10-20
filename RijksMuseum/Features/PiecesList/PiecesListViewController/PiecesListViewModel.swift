@@ -51,7 +51,7 @@ final class PiecesListViewModel {
     }
     
     func onPieceSelected(at index: Int) {
-        guard case .loaded(let pieces) = viewState, index <= pieces.count  else { return }
+        guard case .loaded(let pieces) = viewState, index < pieces.count  else { return }
         
         coordinateToDetails(pieces[index])
     }

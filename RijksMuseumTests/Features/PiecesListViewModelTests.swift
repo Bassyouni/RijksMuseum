@@ -159,6 +159,9 @@ final class PiecesListViewModelTests: XCTestCase {
         
         sut.onPieceSelected(at: 0)
         XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [piece2, piece1])
+        
+        sut.onPieceSelected(at: 2)
+        XCTAssertEqual(env.coordinatorSpy.coordinatedPieces, [piece2, piece1])
     }
  }
 

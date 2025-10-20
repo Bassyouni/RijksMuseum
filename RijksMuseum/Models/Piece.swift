@@ -7,6 +7,7 @@
 
 import Foundation
 
+nonisolated
 struct Piece: Equatable, Identifiable, Hashable, Sendable {
     let id: String
     let title: String?

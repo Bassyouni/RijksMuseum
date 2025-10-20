@@ -17,13 +17,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
         
-        let url = URL(string: "https://data.rijksmuseum.nl/search/collection")!
-        let client = URLSessionHTTPClient()
-        let loader = RemoteMuseumPiecesLoader(url: url, httpClient: client)
-        let paginator = RemoteMuseumPiecesPaginator(loader: loader, languagePolicy: LanguageResolutionPolicy())
-        let viewModel = PiecesListViewModel(paginator: paginator, coordinateToDetails: { _ in })
-        let piecesListViewController = PiecesListViewController(viewModel: viewModel)
-        let navigationController = UINavigationController(rootViewController: piecesListViewController)
+        let navigationController = UINavigationController()
+        let factory = ViewsFactory()
+        let coordinator = PiecesListCoordinator(navigationController: navigationController, factory: factory)
+        coordinator.start()
         
         window.rootViewController = navigationController
         window.makeKeyAndVisible()

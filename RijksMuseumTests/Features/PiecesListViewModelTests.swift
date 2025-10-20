@@ -177,15 +177,6 @@ private extension PiecesListViewModelTests {
         return sut
     }
     
-    func makePiece() -> Piece {
-        Piece(
-            id: UUID().uuidString,
-            title: nil,
-            date: nil,
-            creator: nil,
-            imageURL: nil
-        )
-    }
     
     func givenInitalDataLoaded(with data: [Piece]? = nil,_ sut: PiecesListViewModel) async {
         env.paginator.stubbedResult = .success(data ?? [makePiece()])

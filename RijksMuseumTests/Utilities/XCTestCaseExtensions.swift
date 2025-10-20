@@ -6,6 +6,7 @@
 //
 
 import XCTest
+@testable import RijksMuseum
 
 extension XCTestCase {
     func checkForMemoryLeaks(_ instance: AnyObject, file: StaticString = #filePath, line: UInt = #line) {
@@ -16,6 +17,16 @@ extension XCTestCase {
     
     func uniqueURL() -> URL {
         URL(string: "www.\(UUID().uuidString).nl")!
+    }
+    
+    func makePiece() -> Piece {
+        Piece(
+            id: UUID().uuidString,
+            title: nil,
+            date: nil,
+            creator: nil,
+            imageURL: nil
+        )
     }
 }
 

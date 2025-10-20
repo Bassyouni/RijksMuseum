@@ -15,7 +15,7 @@ class PiecesListViewController: UICollectionViewController {
     
     private lazy var dataSource = createDataSource()
     
-    init(viewModel: PiecesListViewModel, imageResizer: IIIFImageResizer = .init()) {
+    init(viewModel: PiecesListViewModel, imageResizer: IIIFImageResizer) {
         self.viewModel = viewModel
         self.imageResizer = imageResizer
         super.init(collectionViewLayout: Self.createLayout())
